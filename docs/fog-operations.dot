@@ -20,5 +20,5 @@ digraph fog {
 	ready -> action [ label = "operation/reset-operation" ];
 	ready -> ready [ label = "init" ];
 	error -> action [ label = "reset-operation" ];
-	error -> error [ label = "init" ];
+	error -> error [ label = "init/operation" ];
 }
