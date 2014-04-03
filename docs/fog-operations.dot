@@ -25,7 +25,7 @@ digraph fog {
 	auth -> action [ label = "success" ];
 	auth -> error [ label = "exception" ];
 	auth -> notify [ label = "fail" ];
-	ready -> auth [ label = "[file,remote]-opr" ];
+	ready -> auth [ label = "remote-opr" ];
 	ready -> action [ label = "init,simple-opr" ];
 	notify -> ready [ label = "success" ];
 }
