@@ -1,7 +1,7 @@
 digraph fog {
 	// defaults
-	node [shape=circle, fontsize=8, fixedsize=true, width=0.9]; 
-  	edge [fontsize=8]; 
+	node [ shape=circle, fontsize=8, fixedsize=true, width=0.9]; 
+  	edge [ fontsize=8 ]; 
   	rankdir=LR;
 	
 	// vertices
