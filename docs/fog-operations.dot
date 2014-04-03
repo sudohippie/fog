@@ -1,21 +1,24 @@
 digraph fog {
 	// defaults
-	node [shape=circle,fontsize=8,fixedsize=true,width=0.9]; 
+	node [shape=circle, fontsize=8, fixedsize=true, width=0.9]; 
   	edge [fontsize=8]; 
   	rankdir=LR;
 	
 	// vertices
-	start [ style=invis ]
+	start [ shape=point, fixedsize=false, width=0.1 ]
 	new [ shape=doublecircle, color=green ];
 	action;
 	error [ shape=doublecircle, color=red ];
 	ready [ shape=doublecircle, color=green ];
 
 	// edges
-	start -> new  [ label = "begin" ]
+	start -> new  [ label = "begin" ];
+	new -> new [ label = "operation/reset-operation" ];
 	new -> action [ label = "init" ];
-	action -> ready [ label = "ok" ];
-	action -> error [ label = "not-ok" ];
-	ready -> action [ label = "operation" ];
+	action -> ready [ label = "success" ];
+	action -> error [ label = "fail" ];
+	ready -> action [ label = "operation/reset-operation" ];
+	ready -> ready [ label = "init" ];
 	error -> action [ label = "reset-operation" ];
+	error -> error [ label = "init" ];
 }
