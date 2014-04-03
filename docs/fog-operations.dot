@@ -1,24 +1,31 @@
 digraph fog {
 	// defaults
-	node [ shape=circle, fontsize=8, fixedsize=true, width=0.9]; 
+	node [ shape=circle, fontsize=8, fixedsize=true, width=0.9, group=A ]; 
   	edge [ fontsize=8 ]; 
   	rankdir=LR;
 	
 	// vertices
 	start [ shape=point, fixedsize=false, width=0.1 ]
-	new [ shape=doublecircle, color=green ];
+	new [ shape=doublecircle ];
 	action;
 	error [ shape=doublecircle, color=red ];
 	ready [ shape=doublecircle, color=green ];
+	auth;
+	notify;
 
 	// edges
 	start -> new  [ label = "begin" ];
-	new -> new [ label = "operation/reset-operation" ];
+	new -> new [ label = "*-opr" ];
 	new -> action [ label = "init" ];
-	action -> ready [ label = "success" ];
-	action -> error [ label = "fail" ];
-	ready -> action [ label = "operation/reset-operation" ];
-	ready -> ready [ label = "init" ];
-	error -> action [ label = "reset-operation" ];
-	error -> error [ label = "init/operation" ];
+	action -> notify [ label = "success" ];
+	action -> notify [ label = "fail" ];
+	action -> error [ label = "exception" ];
+	error -> error [ label = "*-opr" ];
+	error -> action [ label="init" ];
+	auth -> action [ label = "success" ];
+	auth -> error [ label = "exception" ];
+	auth -> notify [ label = "fail" ];
+	ready -> auth [ label = "[file,remote]-opr" ];
+	ready -> action [ label = "init,simple-opr" ];
+	notify -> ready [ label = "success" ];
 }
