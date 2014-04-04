@@ -1,6 +1,6 @@
 __author__ = 'Raghav Sidhanti'
 
-from .configuration import ConfigError
+from .argsparser import ArgsPrompt
 from apiclient.discovery import build
 from httplib2 import Http
 from oauth2client.file import Storage
@@ -48,12 +48,14 @@ class GoogleDrive(Drive):
         # if no credentials
         if credentials is None or credentials.invalid:
             # validate credentials
-            _cl_id = None
-            _cl_secret = None
-            # TODO Prompt for authentication
+            _id = ArgsPrompt.prompt('Enter Google client id')
+            _secret = ArgsPrompt.prompt('Enter Google client secret')
+
+            if not _id or not _secret:
+                return False
 
             # run flow and store credentials
-            flow = OAuth2WebServerFlow(_cl_id, _cl_secret, 'https://www.googleapis.com/auth/drive')
+            flow = OAuth2WebServerFlow(_id, _secret, 'https://www.googleapis.com/auth/drive')
             credentials = run(flow, storage)
 
         # if every thing is good, authorize http and build drive
