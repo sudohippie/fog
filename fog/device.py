@@ -1,6 +1,7 @@
 __author__ = 'Raghav Sidhanti'
 
 from .argsparser import ArgsPrompt
+from .configuration import Conf
 from apiclient.discovery import build
 from httplib2 import Http
 from oauth2client.file import Storage
@@ -11,16 +12,13 @@ from oauth2client.client import OAuth2WebServerFlow
 
 
 def get():
+    # get configs
     # retrieve active drive
     # provide config and create instance
     pass
 
 
 class Drive(object):
-    _config = None
-
-    def __init__(self, config=None):
-        self._config = config
 
     def open(self, **kwargs):
         pass
@@ -39,31 +37,31 @@ class Drive(object):
 
 
 class GoogleDrive(Drive):
-    _drive = None
+    __drive = None
 
     def open(self, **kwargs):
-        storage = Storage(self._config.drive.get['credentials', None])
+        storage = Storage(Conf.GOOGLE_DRIVE_CREDENTIALS)
         credentials = storage.get()
 
         # if no credentials
         if credentials is None or credentials.invalid:
             # validate credentials
-            _id = ArgsPrompt.prompt('Enter Google client id')
-            _secret = ArgsPrompt.prompt('Enter Google client secret')
+            id = ArgsPrompt.prompt('Enter Google client id')
+            secret = ArgsPrompt.prompt('Enter Google client secret')
 
-            if not _id or not _secret:
+            if not id or not secret:
                 return False
 
             # run flow and store credentials
-            flow = OAuth2WebServerFlow(_id, _secret, 'https://www.googleapis.com/auth/drive')
+            flow = OAuth2WebServerFlow(id, secret, 'https://www.googleapis.com/auth/drive')
             credentials = run(flow, storage)
 
         # if every thing is good, authorize http and build drive
         http = credentials.authorize(Http())
-        self._drive = build('drive', 'v2', http=http)
+        self.__drive = build('drive', 'v2', http=http)
 
         return True
 
     def close(self, **kwargs):
-        self._drive = None
+        self.__drive = None
 
