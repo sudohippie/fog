@@ -9,10 +9,9 @@ def test_init():
     cmd = Init()
     cmd.execute()
 
-
 def test_checkout():
     cmd = Checkout()
-    cmd.execute(drive='dropbox')
+    cmd.execute(drive='googledrive')
 
 
 def test_branch():

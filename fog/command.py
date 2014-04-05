@@ -46,10 +46,10 @@ class Checkout(FogCommand):
         drive_name = kwargs.get('drive', '')
 
         # check whether drive is valid
-        for branch in Conf.BRANCHES:
-            if branch == drive_name:
+        for name in Conf.drives.keys():
+            if name == drive_name:
                 fsutil.delete(Conf.CHECKOUT)
-                fsutil.write(Conf.CHECKOUT, branch)
+                fsutil.write(Conf.CHECKOUT, name)
                 return
 
         StdOut.display(msg='Unknown drive: %s', args=drive_name)
@@ -63,9 +63,9 @@ class Branch(FogCommand):
         checkout = fsutil.read_line(Conf.CHECKOUT)
 
         # read branches and compare with checkout
-        for branch in Conf.BRANCHES:
+        for name in Conf.drives.keys():
             prefix = ' '
-            if branch == checkout:
+            if name == checkout:
                 prefix = '*'
 
-            StdOut.display(prefix=prefix, msg=branch)
+            StdOut.display(prefix=prefix, msg=name)

@@ -42,7 +42,7 @@ class GoogleDrive(Drive):
 
     def __get_credentials(self):
 
-        storage = Storage(Conf.GOOGLE_DRIVE_CREDENTIALS)
+        storage = Storage(Conf.drives.get(Conf.CREDENTIALS))
         credentials = storage.get()
 
         # if no credentials
