@@ -1,7 +1,7 @@
 __author__ = 'Raghav Sidhanti'
 
-from .io import StdIn
-from .configuration import Conf
+from inout import StdIn
+from configuration import Conf
 from apiclient.discovery import build
 from httplib2 import Http
 from oauth2client.file import Storage

@@ -2,9 +2,9 @@ __author__ = 'Raghav Sidhanti'
 
 import os
 
-from .io import StdIn
-from .io import StdOut
-from .configuration import Conf
+from inout import StdIn
+from inout import StdOut
+from configuration import Conf
 from shutil import rmtree
 
 
