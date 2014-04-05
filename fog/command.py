@@ -15,45 +15,42 @@ from shutil import rmtree
 
 class FogCommand(object):
 
-    _kwargs = None
+    _drive = None
 
-    def __init__(self, **kwargs):
-        self._kwargs = kwargs
+    def __init__(self, drive=None):
+        self._drive = drive
 
-    def execute(self):
+    def execute(self, **kwargs):
         pass
 
 
 class Init(FogCommand):
 
-    def execute(self):
-        # if .fog exists, prompt user
+    def __clean(self):
+        # if home exists, prompt user
         if os.path.exists(Conf.HOME):
-            # prompt user
             resp = StdIn.prompt('This will erase current fog configurations. Would you like to continue (yes/no)?')
-            if resp and resp != 'yes':
-                return
-            else:
-                # remove .fog
+            if resp == 'yes':
                 rmtree(Conf.HOME)
+            else:
+                return False
+        return True
 
+    def execute(self, **kwargs):
         # create home and files
-        os.makedirs(Conf.HOME)
+        if self.__clean():
+            os.makedirs(Conf.HOME)
 
 
 class Checkout(FogCommand):
 
-    __drive = None
+    def execute(self, **kwargs):
 
-    def __init__(self, **kwargs):
-        super(kwargs)
-        self.__drive = self._kwargs['drive'].strip()
-        assert self.__drive, 'Missing [drive] argument.'
+        drive_name = kwargs.get('drive', '')
 
-    def execute(self):
         # check whether drive is valid
         for branch in Conf.BRANCHES:
-            if branch == self.__drive:
+            if branch == drive_name:
                 if os.path.exists(Conf.CHECKOUT):
                     os.remove(Conf.CHECKOUT)
                 checkout = open(Conf.CHECKOUT, 'w')
@@ -61,4 +58,4 @@ class Checkout(FogCommand):
                 checkout.close()
                 break
 
-        StdOut.display(msg='Invalid drive name %s', self.__drive)
+        StdOut.display(msg='Invalid drive: %s', args=drive_name)

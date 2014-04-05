@@ -39,7 +39,8 @@ class Drive(object):
 class GoogleDrive(Drive):
     __drive = None
 
-    def open(self, **kwargs):
+    def __get_credentials(self):
+
         storage = Storage(Conf.GOOGLE_DRIVE_CREDENTIALS)
         credentials = storage.get()
 
@@ -50,17 +51,25 @@ class GoogleDrive(Drive):
             secret = StdIn.prompt('Enter Google client secret')
 
             if not id or not secret:
-                return False
+                return None
 
             # run flow and store credentials
             flow = OAuth2WebServerFlow(id, secret, 'https://www.googleapis.com/auth/drive')
             credentials = run(flow, storage)
 
-        # if every thing is good, authorize http and build drive
-        http = credentials.authorize(Http())
-        self.__drive = build('drive', 'v2', http=http)
+        return credentials
 
-        return True
+    def open(self, **kwargs):
+
+        credentials = self.__get_credentials()
+
+        if credentials is not None:
+            # if every thing is good, authorize http and build drive
+            http = credentials.authorize(Http())
+            self.__drive = build('drive', 'v2', http=http)
+            return True
+
+        return False
 
     def close(self, **kwargs):
         self.__drive = None
