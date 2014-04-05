@@ -1,13 +1,9 @@
 __author__ = 'Raghav Sidhanti'
 
-import os
-
+import fsutil
 from .inout import StdIn
 from .inout import StdOut
 from .configuration import Conf
-
-from shutil import rmtree
-
 
 # defines all the available fog commands.
 # every command defines default pre and post steps.
@@ -29,10 +25,10 @@ class Init(FogCommand):
 
     def __clean(self):
         # if home exists, prompt user
-        if os.path.exists(Conf.HOME):
+        if fsutil.exists(Conf.HOME):
             resp = StdIn.prompt('This will erase current fog configurations. Would you like to continue (yes/no)?')
             if resp == 'yes':
-                rmtree(Conf.HOME)
+                fsutil.delete_dirs(Conf.HOME)
             else:
                 return False
         return True
@@ -40,7 +36,7 @@ class Init(FogCommand):
     def execute(self, **kwargs):
         # create home and files
         if self.__clean():
-            os.makedirs(Conf.HOME)
+            fsutil.create_dir(Conf.HOME)
 
 
 class Checkout(FogCommand):
@@ -52,26 +48,19 @@ class Checkout(FogCommand):
         # check whether drive is valid
         for branch in Conf.BRANCHES:
             if branch == drive_name:
-                if os.path.exists(Conf.CHECKOUT):
-                    os.remove(Conf.CHECKOUT)
-                checkout = open(Conf.CHECKOUT, 'w')
-                checkout.write(branch)
-                checkout.close()
+                fsutil.delete(Conf.CHECKOUT)
+                fsutil.write(Conf.CHECKOUT, branch)
                 return
 
-        StdOut.display(msg='Invalid drive: %s', args=drive_name)
+        StdOut.display(msg='Unknown drive: %s', args=drive_name)
 
 
 class Branch(FogCommand):
 
     def execute(self, **kwargs):
 
-        checkout = ''
         # read checkout file
-        if os.path.exists(Conf.CHECKOUT):
-            f = open(Conf.CHECKOUT, 'r')
-            checkout = f.readline()
-            f.close()
+        checkout = fsutil.read_line(Conf.CHECKOUT)
 
         # read branches and compare with checkout
         for branch in Conf.BRANCHES:

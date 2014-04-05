@@ -12,7 +12,7 @@ def test_init():
 
 def test_checkout():
     cmd = Checkout()
-    cmd.execute(drive='skydrive')
+    cmd.execute(drive='dropbox')
 
 
 def test_branch():
@@ -23,3 +23,4 @@ def test_branch():
 if __name__ == '__main__':
     test_checkout()
     test_branch()
+    # test_init()
