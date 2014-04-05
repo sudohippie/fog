@@ -9,6 +9,8 @@ from .configuration import Conf
 # every command defines default pre and post steps.
 # executes appropriate methods on services
 
+_INIT_MSG = 'This will erase fog configurations.'
+
 
 class FogCommand(object):
 
@@ -26,8 +28,7 @@ class Init(FogCommand):
     def __clean(self):
         # if home exists, prompt user
         if fsutil.exists(Conf.HOME):
-            resp = StdIn.prompt('This will erase current fog configurations. Would you like to continue (yes/no)?')
-            if resp == 'yes':
+            if StdIn.prompt_yes(_INIT_MSG):
                 fsutil.delete_dirs(Conf.HOME)
             else:
                 return False
@@ -68,4 +69,15 @@ class Branch(FogCommand):
             if name == checkout:
                 prefix = '*'
 
+            StdOut.display(prefix=prefix, msg=name)
+
+
+class Remote(FogCommand):
+
+    def execute(self, **kwargs):
+        # find all the drive config
+        for name, drive in Conf.drives.items():
+            prefix = ' '
+            if fsutil.exists(drive.get(Conf.DRIVE_HOME)):
+                prefix = '*'
             StdOut.display(prefix=prefix, msg=name)

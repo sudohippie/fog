@@ -9,6 +9,15 @@ class StdIn(object):
         txt = [msg, ': ']
         return raw_input(''.join(txt))
 
+    @staticmethod
+    def prompt_yes(msg=''):
+        txt = [msg,
+               '\n',
+               'Would you like to continue (yes/no)?']
+        resp = StdIn.prompt(''.join(txt))
+        return resp == 'yes'
+
+
 
 class StdOut(object):
     @staticmethod

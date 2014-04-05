@@ -37,14 +37,16 @@ class Conf(object):
     SKY_DRIVE_NAME = 'skydrive'
     _SKY_DRIVE_HOME = ''.join([HOME, '/', SKY_DRIVE_NAME])
     _sky_drive = DriveConf(
-        DRIVE_NAME=SKY_DRIVE_NAME
+        DRIVE_NAME=SKY_DRIVE_NAME,
+        DRIVE_HOME=_SKY_DRIVE_HOME
     )
 
     # drop box
     DROP_BOX_NAME = 'dropbox'
     _DROP_BOX_HOME = ''.join([HOME, '/', DROP_BOX_NAME])
     _drop_box = DriveConf(
-        DRIVE_NAME=DROP_BOX_NAME
+        DRIVE_NAME=DROP_BOX_NAME,
+        DRIVE_HOME=_DROP_BOX_HOME
     )
 
     # available branches
