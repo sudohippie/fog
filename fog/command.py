@@ -57,6 +57,26 @@ class Checkout(FogCommand):
                 checkout = open(Conf.CHECKOUT, 'w')
                 checkout.write(branch)
                 checkout.close()
-                break
+                return
 
         StdOut.display(msg='Invalid drive: %s', args=drive_name)
+
+
+class Branch(FogCommand):
+
+    def execute(self, **kwargs):
+
+        checkout = ''
+        # read checkout file
+        if os.path.exists(Conf.CHECKOUT):
+            f = open(Conf.CHECKOUT, 'r')
+            checkout = f.readline()
+            f.close()
+
+        # read branches and compare with checkout
+        for branch in Conf.BRANCHES:
+            prefix = ' '
+            if branch == checkout:
+                prefix = '*'
+
+            StdOut.display(prefix=prefix, msg=branch)

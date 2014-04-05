@@ -13,13 +13,17 @@ class StdIn(object):
 class StdOut(object):
     @staticmethod
     def display(**kwargs):
-        drive = kwargs.get('drive', None)
-        if not drive:
-            drive = 'fog'
+        prefix = kwargs.get('prefix', None)
+        if not prefix:
+            prefix = 'fog'
 
         msg = kwargs.get('msg', '')
-        args = kwargs.get('args', '')
+        args = kwargs.get('args', None)
 
-        txt = ''.join(['[', drive, ']', ' - ', msg])
+        txt = ''.join(['[', prefix, ']', ' ', msg])
 
-        print txt % args
+        if args is None:
+            print txt
+        else:
+            print txt % args
+
