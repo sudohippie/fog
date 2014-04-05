@@ -5,7 +5,7 @@ class Conf(object):
 
     # standard
     HOME = '.fog'
-    LOGS = ''.join([HOME, '/logs'])
+    LOGS = ''.join(HOME, '/logs')
     CHECKOUT = ''.join(HOME, '/checkout')
 
     # google

@@ -1,6 +1,6 @@
 __author__ = 'Raghav Sidhanti'
 
-from .argsparser import ArgsPrompt
+from .io import StdIn
 from .configuration import Conf
 from apiclient.discovery import build
 from httplib2 import Http
@@ -46,8 +46,8 @@ class GoogleDrive(Drive):
         # if no credentials
         if credentials is None or credentials.invalid:
             # validate credentials
-            id = ArgsPrompt.prompt('Enter Google client id')
-            secret = ArgsPrompt.prompt('Enter Google client secret')
+            id = StdIn.prompt('Enter Google client id')
+            secret = StdIn.prompt('Enter Google client secret')
 
             if not id or not secret:
                 return False
