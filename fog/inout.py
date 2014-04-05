@@ -7,11 +7,19 @@ class StdIn(object):
     @staticmethod
     def prompt(msg=''):
         txt = [msg, ': ']
-        return input(''.join(txt))
+        return raw_input(''.join(txt))
 
 
 class StdOut(object):
     @staticmethod
-    def display(drive='fog', msg='', *args):
-        txt = ['[', drive, ']', ' - ', msg]
-        print ''.join(txt) % args
+    def display(**kwargs):
+        drive = kwargs.get('drive', None)
+        if not drive:
+            drive = 'fog'
+
+        msg = kwargs.get('msg', '')
+        args = kwargs.get('args', '')
+
+        txt = ''.join(['[', drive, ']', ' - ', msg])
+
+        print txt % args
