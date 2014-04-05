@@ -32,9 +32,6 @@ def read_lines(path=None):
 
 
 def write(path=None, data=None):
-    if path is None:
-        return False
-
     delete(path)
 
     f = open(path, 'wb')
@@ -55,7 +52,8 @@ def delete(path=None):
 
 
 def create_dir(path=None):
-    if path is None:
-        return False
+    if exists(path):
+        return True
+
     os.mkdir(path)
     return True
