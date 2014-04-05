@@ -1,7 +1,8 @@
 __author__ = 'Raghav Sidhanti'
 
-from inout import StdIn
-from configuration import Conf
+from fog.inout import StdIn
+from fog.configuration import Conf
+
 from apiclient.discovery import build
 from httplib2 import Http
 from oauth2client.file import Storage
