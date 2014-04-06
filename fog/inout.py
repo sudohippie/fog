@@ -18,7 +18,6 @@ class StdIn(object):
         return resp == 'yes'
 
 
-
 class StdOut(object):
     @staticmethod
     def display(**kwargs):

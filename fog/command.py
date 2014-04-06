@@ -10,6 +10,63 @@ from .configuration import Conf
 # executes appropriate methods on services
 
 _INIT_MSG = 'This will erase fog configurations.'
+_CHECKOUT_MSG = 'Invalid drive name: %s'
+_ACTIVE_SIGN = '*'
+_INACTIVE_SIGN = ' '
+
+
+class CommandParser(object):
+
+    _drive = None
+
+    def __init__(self, drive):
+        self._drive = drive
+
+    def parse(self, *args):
+
+        inputs = self.__clean(args)
+
+        # first argument is always command
+        if len(inputs) < 1:
+            self.__print_missing_args()
+
+        # second or more arguments may be needed based on command
+        op = str(inputs[0]).lower()
+
+        # create instance for drive and return
+        cmd_lambda = {
+            'init': lambda: Init(self._drive),
+            'branch': lambda: Branch(self._drive),
+            'checkout': lambda: Checkout(self._drive),
+            'remote': lambda: Remote(self._drive)
+        }.get(op, None)
+
+        # if no match is found
+        if cmd_lambda is None:
+            self.__print_invalid_args(op)
+            return None
+
+        return cmd_lambda()
+
+    @staticmethod
+    def __clean(args):
+        inputs = []
+        # input should contain one or more arguments, collect the strings
+        if args is not None:
+            for arg in args:
+                if arg:
+                    inputs.append(arg)
+        return inputs
+
+    @staticmethod
+    def __print_missing_args():
+        _MISSING_ARGS = 'Missing one or more input argument(s). Try "help" for usage.'
+        StdOut.display(msg=_MISSING_ARGS)
+
+    @staticmethod
+    def __print_invalid_args(arg):
+        _INVALID_ARGS = 'Invalid input argument "%s". Try "help" for usage.'
+        StdOut.display(msg=_INVALID_ARGS, args=arg)
 
 
 class FogCommand(object):
@@ -53,7 +110,7 @@ class Checkout(FogCommand):
                 fsutil.write(Conf.CHECKOUT, name)
                 return
 
-        StdOut.display(msg='Unknown drive: %s', args=drive_name)
+        StdOut.display(msg=_CHECKOUT_MSG, args=drive_name)
 
 
 class Branch(FogCommand):
@@ -65,9 +122,9 @@ class Branch(FogCommand):
 
         # read branches and compare with checkout
         for name in Conf.drives.keys():
-            prefix = ' '
+            prefix = _INACTIVE_SIGN
             if name == checkout:
-                prefix = '*'
+                prefix = _ACTIVE_SIGN
 
             StdOut.display(prefix=prefix, msg=name)
 
@@ -77,7 +134,7 @@ class Remote(FogCommand):
     def execute(self, **kwargs):
         # find all the drive config
         for name, drive in Conf.drives.items():
-            prefix = ' '
+            prefix = _INACTIVE_SIGN
             if fsutil.exists(drive.get(Conf.DRIVE_HOME)):
-                prefix = '*'
+                prefix = _ACTIVE_SIGN
             StdOut.display(prefix=prefix, msg=name)
