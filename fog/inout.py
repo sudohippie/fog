@@ -22,13 +22,24 @@ class StdOut(object):
     @staticmethod
     def display(**kwargs):
         prefix = kwargs.get('prefix', None)
-        if not prefix:
-            prefix = 'fog'
-
+        ignore_prefix = kwargs.get('ignore_prefix', False)
         msg = kwargs.get('msg', '')
         args = kwargs.get('args', None)
 
-        txt = ''.join(['[', prefix, ']', ' ', msg])
+        if not prefix:
+            prefix = 'fog'
+
+        txt_list = []
+
+        if not ignore_prefix:
+            txt_list.append('[')
+            txt_list.append(prefix)
+            txt_list.append(']')
+            txt_list.append(' ')
+
+        txt_list.append(msg)
+
+        txt = ''.join(txt_list)
 
         if args is None:
             print txt
