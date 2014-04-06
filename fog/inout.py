@@ -26,7 +26,7 @@ class StdOut(object):
         msg = kwargs.get('msg', '')
         args = kwargs.get('args', None)
 
-        if not prefix:
+        if prefix is None:
             prefix = 'fog'
 
         txt_list = []

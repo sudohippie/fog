@@ -19,37 +19,37 @@ class CommandParserTest(unittest.TestCase):
         self.__parser = CommandParser(None)
 
     def test_init(self):
-        cmd = self.__parser.parse('init')
+        cmd = self.__parser.parse(['fog', 'init'])
         self.assertIsNotNone(cmd)
         self.assertTrue(type(cmd) is Init)
 
     def test_branch(self):
-        cmd = self.__parser.parse('branch')
+        cmd = self.__parser.parse(['fog', 'branch'])
         self.assertIsNotNone(cmd)
         self.assertTrue(type(cmd) is Branch)
 
     def test_checkout(self):
-        cmd = self.__parser.parse('checkout')
+        cmd = self.__parser.parse(['fog', 'checkout'])
         self.assertIsNotNone(cmd)
         self.assertTrue(type(cmd) is Checkout)
 
     def test_remote(self):
-        cmd = self.__parser.parse('remote')
+        cmd = self.__parser.parse(['fog', 'remote'])
         self.assertIsNotNone(cmd)
         self.assertTrue(type(cmd) is Remote)
 
     def test_help(self):
-        cmd = self.__parser.parse('help')
+        cmd = self.__parser.parse(['fog', 'help'])
         self.assertIsNotNone(cmd)
         self.assertTrue(type(cmd) is Help)
 
     def test_invalid_bad_cmd(self):
-        cmd = self.__parser.parse('blah')
+        cmd = self.__parser.parse(['fog', 'blah'])
         self.assertIsNotNone(cmd)
         self.assertTrue(type(cmd) is Invalid)
 
     def test_invalid_no_cmd(self):
-        cmd = self.__parser.parse('')
+        cmd = self.__parser.parse(['fog'])
         self.assertIsNotNone(cmd)
         self.assertTrue(type(cmd) is Invalid)
 
@@ -59,7 +59,7 @@ class CommandParserTest(unittest.TestCase):
         self.assertTrue(type(cmd) is Invalid)
 
     def test_args(self):
-        cmd = self.__parser.parse('init', 'src', 'dest')
+        cmd = self.__parser.parse(['fog', 'init', 'src', 'dest'])
         self.assertIsNotNone(cmd)
         self.assertTrue(type(cmd) is Init)
 
@@ -70,8 +70,8 @@ def test_init():
 
 
 def test_checkout():
-    cmd = Checkout()
-    cmd.execute(drive='googledrive')
+    cmd = Checkout(args=['dropbox'])
+    cmd.execute()
 
 
 def test_branch():
@@ -89,11 +89,10 @@ def test_help():
     cmd.execute()
 
 if __name__ == '__main__':
-    # test_checkout()
-    # test_branch()
-    # test_init()
-    # test_remote()
+    test_checkout()
+    test_branch()
+    test_init()
+    test_remote()
     test_help()
 
-
-    # unittest.main()
+    unittest.main()

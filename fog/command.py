@@ -1,19 +1,26 @@
 __author__ = 'Raghav Sidhanti'
 
 import fsutil
-from .inout import StdIn
-from .inout import StdOut
-from .configuration import Conf
+from inout import StdIn
+from inout import StdOut
+from configuration import Conf
 
 # defines all the available fog commands.
 # every command defines default pre and post steps.
 # executes appropriate methods on services
 
 _INIT_MSG = 'This will erase fog configurations.'
-_CHECKOUT_MSG = 'Invalid drive name: %s'
+_CHECKOUT_MSG = 'Invalid drive name'
 _ACTIVE_SIGN = '*'
 _INACTIVE_SIGN = ' '
 _INVALID_ARGS = 'Invalid input argument(s). Try "help" for usage.'
+
+
+class CommandInvoker(object):
+
+    def invoke(self, command):
+        if command is not None:
+            command.execute()
 
 
 class CommandParser(object):
@@ -23,26 +30,31 @@ class CommandParser(object):
     def __init__(self, drive):
         self._drive = drive
 
-    def parse(self, *args):
+    def parse(self, args):
         inputs = self.__clean(args)
 
         cmd = str(inputs[0]).lower()
         cmd_args = []
-        for cmd_arg in range(1, len(inputs), 1):
-            cmd_args.append(cmd_arg)
+        for idx in range(1, len(inputs), 1):
+            cmd_args.append(args[idx])
 
         return self.__get_command(cmd, cmd_args)
 
     def __clean(self, args):
         inputs = []
+
+        if args is None or len(args) == 1:
+            inputs.append('invalid')
+            return inputs
+
+        # remote fog command
+        args.pop(0)
+
         # clean multiple spaces
         if args is not None:
             for arg in args:
                 if arg:
-                    inputs.append(arg)
-
-        if len(inputs) == 0:
-            inputs.append('invalid')
+                    inputs.append(arg.strip())
 
         return inputs
 
@@ -63,10 +75,13 @@ class FogCommand(object):
     _args = None
 
     def __init__(self, drive=None, args=None):
-        self.args = args
+        self._args = args
         self._drive = drive
 
     def execute(self, **kwargs):
+        pass
+
+    def _validate_args(self):
         pass
 
 
@@ -91,16 +106,22 @@ class Checkout(FogCommand):
 
     def execute(self, **kwargs):
 
-        drive_name = kwargs.get('drive', '')
-
         # check whether drive is valid
-        for name in Conf.drives.keys():
-            if name == drive_name:
-                fsutil.delete(Conf.CHECKOUT)
-                fsutil.write(Conf.CHECKOUT, name)
-                return
+        if self._validate_args():
+            drive_name = self._args[0]
 
-        StdOut.display(msg=_CHECKOUT_MSG, args=drive_name)
+            for name in Conf.drives.keys():
+                if name == drive_name:
+                    fsutil.delete(Conf.CHECKOUT)
+                    fsutil.write(Conf.CHECKOUT, name)
+                    return
+
+        StdOut.display(msg=_CHECKOUT_MSG, ignore_prefix=True)
+
+    def _validate_args(self):
+        if len(self._args) == 1:
+            return True
+        return False
 
 
 class Branch(FogCommand):
@@ -133,7 +154,7 @@ class Remote(FogCommand):
 class Invalid(FogCommand):
 
     def execute(self, **kwargs):
-        StdOut.display(msg=_INVALID_ARGS)
+        StdOut.display(msg=_INVALID_ARGS, ignore_prefix=True)
 
 
 class Help(FogCommand):
