@@ -79,7 +79,7 @@ class ConfUtil(object):
         return fsutil.read_line(Conf.CHECKOUT)
 
     @staticmethod
-    def create_checkout(checkout):
+    def checkout(checkout):
         # add to checkout file
         fsutil.write(Conf.CHECKOUT, checkout)
 

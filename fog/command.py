@@ -115,7 +115,7 @@ class Checkout(FogCommand):
                 StdOut.display(msg=_INVALID_DRIVE_MSG, args=('branch', 'help'), ignore_prefix=True)
                 return
 
-            ConfUtil.create_checkout(drive_name)
+            ConfUtil.checkout(drive_name)
 
 
     def __validate_args(self):
