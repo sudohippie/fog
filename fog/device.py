@@ -57,6 +57,7 @@ class GoogleDrive(Drive):
 
         # if no credentials
         if credentials is None or credentials.invalid:
+            StdOut.display(ignore_prefix=True, msg='Google credentials are missing or may have been updated.')
             # validate credentials
             id = StdIn.prompt('Enter Google client id')
             secret = StdIn.prompt('Enter Google client secret')

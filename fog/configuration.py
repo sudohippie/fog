@@ -85,7 +85,7 @@ class ConfUtil(object):
 
     @staticmethod
     def remove_drive(drive_name):
-        fsutil.delete(Conf.drives.get(drive_name).get(Conf.DRIVE_HOME))
+        fsutil.delete_dirs(Conf.drives.get(drive_name).get(Conf.DRIVE_HOME))
 
     @staticmethod
     def remove_home():
