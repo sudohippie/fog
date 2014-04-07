@@ -21,12 +21,12 @@ class CommandInvoker(object):
 
     def invoke(self, command):
         if command is not None:
-
             # check state
             if not ConfUtil.is_valid_state():
                 if not isinstance(command, Help) and not isinstance(command, Init) and not isinstance(command, Invalid):
                     StdOut.display(ignore_prefix=True, msg=_NOT_FOG_MSG, args='help')
                     return
+
             command.execute()
 
 
