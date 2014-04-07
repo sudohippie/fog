@@ -16,7 +16,7 @@ class CommandParserTest(unittest.TestCase):
     __parser = None
 
     def setUp(self):
-        self.__parser = CommandParser(None)
+        self.__parser = CommandParser()
 
     def test_init(self):
         cmd = self.__parser.parse(['fog', 'init'])
