@@ -61,7 +61,7 @@ class Conf(object):
 class ConfUtil(object):
     # checks whether the given branch is valid
     @staticmethod
-    def is_valid_branch(branch):
+    def valid_drive(branch):
         # search in static branches
         for k in Conf.drives.keys():
             if k == branch:
@@ -69,7 +69,7 @@ class ConfUtil(object):
         return False
 
     @staticmethod
-    def is_valid_state():
+    def valid_state():
         # check for whether there are any anomalies with the configurations
         return fsutil.exists(Conf.HOME)
 
@@ -84,6 +84,10 @@ class ConfUtil(object):
         fsutil.write(Conf.CHECKOUT, checkout)
 
     @staticmethod
+    def remove_drive(drive_name):
+        fsutil.delete(Conf.drives.get(drive_name).get(Conf.DRIVE_HOME))
+
+    @staticmethod
     def remove_home():
         fsutil.delete_dirs(Conf.HOME)
 
@@ -92,12 +96,26 @@ class ConfUtil(object):
         fsutil.create_dir(Conf.HOME)
 
     @staticmethod
-    def exists_home():
-        return fsutil.exists(Conf.HOME)
+    def create_drive(drive_name):
+        fsutil.create_dir(Conf.drives.get(drive_name).get(Conf.DRIVE_HOME))
 
     @staticmethod
     def exists_drive(drive_name):
         return fsutil.exists(Conf.drives.get(drive_name).get(Conf.DRIVE_HOME))
+
+    @staticmethod
+    def exists_home():
+        return fsutil.exists(Conf.HOME)
+
+    @staticmethod
+    def get_drive_prop(drive_name, prop_name):
+        drive = Conf.drives.get(drive_name, None)
+
+        if drive is None:
+            return ''
+
+        return drive.get(prop_name)
+
 
 
 

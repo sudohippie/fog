@@ -11,12 +11,14 @@ from configuration import ConfUtil
 # every command defines default pre and post steps.
 # executes appropriate methods on services
 
-_INIT_MSG = 'This will erase fog configurations.'
-_CHECKOUT_MSG = 'Invalid drive. Try "%s" for drive names or "%s" for usage.'
+_INIT_MSG = 'This will erase existing fog configurations.'
+_NO_CHECKOUT_MSG = 'No checkout branch. Try "%s" for usage.'
+_INVALID_DRIVE_MSG = 'Invalid drive. Try "%s" for drive names or "%s" for usage.'
 _ACTIVE_SIGN = '*'
 _INACTIVE_SIGN = ' '
 _INVALID_ARGS = 'Invalid input argument(s). Try "%s" for usage.'
 _NOT_FOG_MSG = 'Not a fog directory (missing .fog). Try "%s" to initialize or "%s" for usage.'
+_TRACKED_DRIVE = 'Drive %s is already tracked. Try "%s" to un-track and try again or "%s" for usage.'
 
 
 class CommandInvoker(object):
@@ -24,7 +26,7 @@ class CommandInvoker(object):
     def invoke(self, command):
         if command is not None:
             # check state
-            if not ConfUtil.is_valid_state():
+            if not ConfUtil.valid_state():
                 if not isinstance(command, Help) and not isinstance(command, Init) and not isinstance(command, Invalid):
                     StdOut.display(ignore_prefix=True, msg=_NOT_FOG_MSG, args=('init', 'help'))
                     return
@@ -75,12 +77,10 @@ class CommandParser(object):
 
 class FogCommand(object):
 
-    _drive = None
     _args = None
 
     def __init__(self, args=None):
         self._args = args
-        self._drive = device.get()
 
     def execute(self, **kwargs):
         pass
@@ -114,12 +114,12 @@ class Checkout(FogCommand):
         if self.__validate_args():
             drive_name = self._args[0]
 
-            for name in Conf.drives.keys():
-                if name == drive_name:
-                    ConfUtil.create_checkout(name)
-                    return
+            if not ConfUtil.valid_drive(drive_name):
+                StdOut.display(msg=_INVALID_DRIVE_MSG, args=('branch', 'help'), ignore_prefix=True)
+                return
 
-        StdOut.display(msg=_CHECKOUT_MSG, args=('branch', 'help'), ignore_prefix=True)
+            ConfUtil.create_checkout(drive_name)
+
 
     def __validate_args(self):
         if len(self._args) == 1:
@@ -145,18 +145,23 @@ class Branch(FogCommand):
 
 class Remote(FogCommand):
 
-    def execute(self, **kwargs):
-        remote = None
-        if len(self._args) == 0:
-            remote = RemoteList(self._args)
-        else:
-            remote_cmd = self._args[1]
-            remote = {
-                'add': lambda: RemoteAdd(self._args),
-                'rm': lambda: None
-            }.get(remote_cmd, lambda: Invalid(self._args))()
+    def __get_remote(self, cmd):
+        return {
+            '': lambda: RemoteList(self._args),
+            'add': lambda: RemoteAdd(self._args),
+            'rm': lambda: None
+        }.get(cmd, lambda: Invalid(self._args))()
 
-        remote.execute(kwargs)
+    def execute(self, **kwargs):
+        cmd = 'invalid'
+
+        if len(self._args) == 0:
+            cmd = ''
+        elif len(self._args) == 2:
+            cmd = self._args[0]
+
+        remote = self.__get_remote(cmd)
+        remote.execute(**kwargs)
 
 
 class RemoteList(Remote):
@@ -173,9 +178,23 @@ class RemoteList(Remote):
 class RemoteAdd(FogCommand):
 
     def execute(self, **kwargs):
-        # prompt if remote exists
+        drive_name = self._args[1]
+        drive = device.get_drive(drive_name)
+
+        # reject invalid drive names
+        if drive is None:
+            StdOut.display(msg=_INVALID_DRIVE_MSG, args=('branch', 'help'), ignore_prefix=True)
+            return
+
+        # reject if already tracked
+        if ConfUtil.exists_drive(drive_name):
+            StdOut.display(ignore_prefix=True, msg=_TRACKED_DRIVE, args=(drive_name, 'remote rm', 'help'))
+            return
+
         # create remote
-        pass
+        ConfUtil.create_drive(drive_name)
+        drive.open(**kwargs)
+        drive.close(*kwargs)
 
 
 class Invalid(FogCommand):

@@ -1,6 +1,7 @@
 __author__ = 'Raghav Sidhanti'
 
 from inout import StdIn
+from inout import StdOut
 from configuration import Conf
 from configuration import ConfUtil
 
@@ -13,16 +14,16 @@ from oauth2client.client import OAuth2WebServerFlow
 # define the list of devices and their behaviours
 
 
-def get():
+def get_active_drive():
     # get configs
     checkout = ConfUtil.get_checkout()
     # retrieve active drive
     if checkout:
-        return _get_drive('Goog')
+        return get_drive(checkout)
     return None
 
 
-def _get_drive(name):
+def get_drive(name):
     return {
         Conf.GOOGLE_DRIVE_NAME: lambda: GoogleDrive(),
         Conf.DROP_BOX_NAME: lambda: None
@@ -30,7 +31,6 @@ def _get_drive(name):
 
 
 class Drive(object):
-
     def open(self, **kwargs):
         pass
 
@@ -52,7 +52,7 @@ class GoogleDrive(Drive):
 
     def __get_credentials(self):
 
-        storage = Storage(Conf.drives.get(Conf.CREDENTIALS))
+        storage = Storage(ConfUtil.get_drive_prop(Conf.GOOGLE_DRIVE_NAME, Conf.CREDENTIALS))
         credentials = storage.get()
 
         # if no credentials
@@ -64,6 +64,8 @@ class GoogleDrive(Drive):
             if not id or not secret:
                 return None
 
+            StdOut.display(ignore_prefix=True,
+                           msg='Google requires your consent. Check your default browser to accept access privileges.')
             # run flow and store credentials
             flow = OAuth2WebServerFlow(id, secret, 'https://www.googleapis.com/auth/drive')
             credentials = run(flow, storage)
