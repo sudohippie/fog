@@ -10,22 +10,21 @@ digraph fog {
 	action;
 	error [ shape=doublecircle, color=red ];
 	ready [ shape=doublecircle, color=green ];
-	auth;
+	validate;
 	notify;
 
 	// edges
 	start -> new  [ label = "begin" ];
 	new -> new [ label = "*-opr" ];
 	new -> action [ label = "init" ];
-	action -> notify [ label = "success" ];
-	action -> notify [ label = "fail" ];
+	action -> notify [ label = "success/fail" ];
 	action -> error [ label = "exception" ];
 	error -> error [ label = "*-opr" ];
 	error -> action [ label="init" ];
-	auth -> action [ label = "success" ];
-	auth -> error [ label = "exception" ];
-	auth -> notify [ label = "fail" ];
-	ready -> auth [ label = "remote-opr" ];
-	ready -> action [ label = "init,simple-opr" ];
+	validate -> action [ label = "success" ];
+	validate -> error [ label = "exception" ];
+	validate -> notify [ label = "fail" ];
+	ready -> validate [ label = "*-opr" ];
+	ready -> action [ label = "init" ];
 	notify -> ready [ label = "success" ];
 }
