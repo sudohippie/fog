@@ -1,25 +1,32 @@
 __author__ = 'Raghav Sidhanti'
 
-import fsutil
 from inout import StdIn
 from inout import StdOut
 from configuration import Conf
+from configuration import ConfUtil
 
 # defines all the available fog commands.
 # every command defines default pre and post steps.
 # executes appropriate methods on services
 
 _INIT_MSG = 'This will erase fog configurations.'
-_CHECKOUT_MSG = 'Invalid drive name'
+_CHECKOUT_MSG = 'Invalid drive. Try "%s" for drive names or "%s" for usage.'
 _ACTIVE_SIGN = '*'
 _INACTIVE_SIGN = ' '
 _INVALID_ARGS = 'Invalid input argument(s). Try "%s" for usage.'
+_NOT_FOG_MSG = 'Not a fog directory (missing .fog). Try "%s" for usage.'
 
 
 class CommandInvoker(object):
 
     def invoke(self, command):
         if command is not None:
+
+            # check state
+            if not ConfUtil.is_valid_state():
+                if not isinstance(command, Help) and not isinstance(command, Init) and not isinstance(command, Invalid):
+                    StdOut.display(ignore_prefix=True, msg=_NOT_FOG_MSG, args='help')
+                    return
             command.execute()
 
 
@@ -89,9 +96,9 @@ class Init(FogCommand):
 
     def __reset(self):
         # if home exists, prompt user
-        if fsutil.exists(Conf.HOME):
+        if ConfUtil.exists_home():
             if StdIn.prompt_yes(_INIT_MSG):
-                fsutil.delete_dirs(Conf.HOME)
+                ConfUtil.remove_home()
             else:
                 return False
         return True
@@ -99,7 +106,7 @@ class Init(FogCommand):
     def execute(self, **kwargs):
         # create home and files
         if self.__reset():
-            fsutil.create_dir(Conf.HOME)
+            ConfUtil.create_home()
 
 
 class Checkout(FogCommand):
@@ -112,11 +119,10 @@ class Checkout(FogCommand):
 
             for name in Conf.drives.keys():
                 if name == drive_name:
-                    fsutil.delete(Conf.CHECKOUT)
-                    fsutil.write(Conf.CHECKOUT, name)
+                    ConfUtil.create_checkout(name)
                     return
 
-        StdOut.display(msg=_CHECKOUT_MSG, ignore_prefix=True)
+        StdOut.display(msg=_CHECKOUT_MSG, args=('branch', 'help'), ignore_prefix=True)
 
     def __validate_args(self):
         if len(self._args) == 1:
@@ -129,7 +135,7 @@ class Branch(FogCommand):
     def execute(self, **kwargs):
 
         # read checkout file
-        checkout = fsutil.read_line(Conf.CHECKOUT)
+        checkout = ConfUtil.get_checkout()
 
         # read branches and compare with checkout
         for name in Conf.drives.keys():
@@ -146,7 +152,7 @@ class Remote(FogCommand):
         # find all the drive config
         for name, drive in Conf.drives.items():
             prefix = _INACTIVE_SIGN
-            if fsutil.exists(drive.get(Conf.DRIVE_HOME)):
+            if ConfUtil.exists_drive(name):
                 prefix = _ACTIVE_SIGN
             StdOut.display(prefix=prefix, msg=name)
 
@@ -169,15 +175,15 @@ class Help(FogCommand):
         msgs = [
             'usage: fog <command> [<args>]\n\n',
             'Commonly used fog commands are:\n',
-            '\tbranch         List available drives\n',
-            '\tcheckout       Checkout a drive\n',
-            '\tinit           Create an empty fog directory or reinitialize an existing one\n',
-            '\tpull           Download files from remote drive\n',
-            '\tpush           Upload a file to remote drive\n',
-            '\tremote         List all the drives being tracked\n',
-            '\tremote add     Track a remote drive\n',
-            '\tremote rm      Un-track a remote drive\n',
-            '\trm             Move a file on remote drive to trash'
+            '  branch         List available drives\n',
+            '  checkout       Checkout a drive\n',
+            '  init           Create an empty fog directory or reinitialize an existing one\n',
+            '  pull           Download files from remote drive\n',
+            '  push           Upload a file to remote drive\n',
+            '  remote         List all the drives being tracked\n',
+            '  remote add     Track a remote drive\n',
+            '  remote rm      Un-track a remote drive\n',
+            '  rm             Move a file on remote drive to trash'
         ]
 
         StdOut.display(msg=''.join(msgs), ignore_prefix=True)

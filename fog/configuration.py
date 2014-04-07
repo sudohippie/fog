@@ -1,5 +1,7 @@
 __author__ = 'Raghav Sidhanti'
 
+import fsutil
+
 
 class DriveConf(object):
     kw = None
@@ -12,7 +14,6 @@ class DriveConf(object):
 
 
 class Conf(object):
-
     # standard
     HOME = '.fog'
     LOGS = ''.join([HOME, '/logs'])
@@ -27,9 +28,9 @@ class Conf(object):
     _GOOGLE_DRIVE_HOME = ''.join([HOME, '/', GOOGLE_DRIVE_NAME])
     _GOOGLE_DRIVE_CREDENTIALS = ''.join([_GOOGLE_DRIVE_HOME, '/auth.dat'])
     _google_drive = DriveConf(
-            DRIVE_NAME=GOOGLE_DRIVE_NAME,
-            DRIVE_HOME=_GOOGLE_DRIVE_HOME,
-            CREDENTIALS=_GOOGLE_DRIVE_CREDENTIALS
+        DRIVE_NAME=GOOGLE_DRIVE_NAME,
+        DRIVE_HOME=_GOOGLE_DRIVE_HOME,
+        CREDENTIALS=_GOOGLE_DRIVE_CREDENTIALS
     )
 
 
@@ -55,6 +56,48 @@ class Conf(object):
         SKY_DRIVE_NAME: _sky_drive,
         DROP_BOX_NAME: _drop_box
     }
+
+
+class ConfUtil(object):
+    # checks whether the given branch is valid
+    @staticmethod
+    def is_valid_branch(branch):
+        # search in static branches
+        for k in Conf.drives.keys():
+            if k == branch:
+                return True
+        return False
+
+    @staticmethod
+    def is_valid_state():
+        # check for whether there are any anomalies with the configurations
+        return fsutil.exists(Conf.HOME)
+
+    @staticmethod
+    def get_checkout():
+        # read file, spit out result
+        return fsutil.read_line(Conf.CHECKOUT)
+
+    @staticmethod
+    def create_checkout(checkout):
+        # add to checkout file
+        fsutil.write(Conf.CHECKOUT, checkout)
+
+    @staticmethod
+    def remove_home():
+        fsutil.delete_dirs(Conf.HOME)
+
+    @staticmethod
+    def create_home():
+        fsutil.create_dir(Conf.HOME)
+
+    @staticmethod
+    def exists_home():
+        return fsutil.exists(Conf.HOME)
+
+    @staticmethod
+    def exists_drive(drive_name):
+        return fsutil.exists(Conf.drives.get(drive_name).get(Conf.DRIVE_HOME))
 
 
 
