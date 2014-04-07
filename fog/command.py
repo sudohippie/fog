@@ -13,7 +13,7 @@ _INIT_MSG = 'This will erase fog configurations.'
 _CHECKOUT_MSG = 'Invalid drive name'
 _ACTIVE_SIGN = '*'
 _INACTIVE_SIGN = ' '
-_INVALID_ARGS = 'Invalid input argument(s). Try "help" for usage.'
+_INVALID_ARGS = 'Invalid input argument(s). Try "%s" for usage.'
 
 
 class CommandInvoker(object):
@@ -81,13 +81,13 @@ class FogCommand(object):
     def execute(self, **kwargs):
         pass
 
-    def _validate_args(self):
+    def help(self):
         pass
 
 
 class Init(FogCommand):
 
-    def __clean(self):
+    def __reset(self):
         # if home exists, prompt user
         if fsutil.exists(Conf.HOME):
             if StdIn.prompt_yes(_INIT_MSG):
@@ -98,7 +98,7 @@ class Init(FogCommand):
 
     def execute(self, **kwargs):
         # create home and files
-        if self.__clean():
+        if self.__reset():
             fsutil.create_dir(Conf.HOME)
 
 
@@ -107,7 +107,7 @@ class Checkout(FogCommand):
     def execute(self, **kwargs):
 
         # check whether drive is valid
-        if self._validate_args():
+        if self.__validate_args():
             drive_name = self._args[0]
 
             for name in Conf.drives.keys():
@@ -118,7 +118,7 @@ class Checkout(FogCommand):
 
         StdOut.display(msg=_CHECKOUT_MSG, ignore_prefix=True)
 
-    def _validate_args(self):
+    def __validate_args(self):
         if len(self._args) == 1:
             return True
         return False
@@ -151,10 +151,16 @@ class Remote(FogCommand):
             StdOut.display(prefix=prefix, msg=name)
 
 
+class RemoteAdd(FogCommand):
+
+    def execute(self, **kwargs):
+        pass
+
+
 class Invalid(FogCommand):
 
     def execute(self, **kwargs):
-        StdOut.display(msg=_INVALID_ARGS, ignore_prefix=True)
+        StdOut.display(msg=_INVALID_ARGS, args='help', ignore_prefix=True)
 
 
 class Help(FogCommand):
