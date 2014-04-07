@@ -1,5 +1,7 @@
 __author__ = 'Raghav Sidhanti'
 
+import device
+
 from inout import StdIn
 from inout import StdOut
 from configuration import Conf
@@ -14,7 +16,7 @@ _CHECKOUT_MSG = 'Invalid drive. Try "%s" for drive names or "%s" for usage.'
 _ACTIVE_SIGN = '*'
 _INACTIVE_SIGN = ' '
 _INVALID_ARGS = 'Invalid input argument(s). Try "%s" for usage.'
-_NOT_FOG_MSG = 'Not a fog directory (missing .fog). Try "%s" for usage.'
+_NOT_FOG_MSG = 'Not a fog directory (missing .fog). Try "%s" to initialize or "%s" for usage.'
 
 
 class CommandInvoker(object):
@@ -24,18 +26,13 @@ class CommandInvoker(object):
             # check state
             if not ConfUtil.is_valid_state():
                 if not isinstance(command, Help) and not isinstance(command, Init) and not isinstance(command, Invalid):
-                    StdOut.display(ignore_prefix=True, msg=_NOT_FOG_MSG, args='help')
+                    StdOut.display(ignore_prefix=True, msg=_NOT_FOG_MSG, args=('init', 'help'))
                     return
 
             command.execute()
 
 
 class CommandParser(object):
-
-    _drive = None
-
-    def __init__(self, drive):
-        self._drive = drive
 
     def parse(self, args):
         inputs = self.__clean(args)
@@ -68,11 +65,11 @@ class CommandParser(object):
     def __get_command(self, cmd='', cmd_args=[]):
         # create instance for drive and return
         return {
-            'branch': lambda: Branch(self._drive, cmd_args),
-            'checkout': lambda: Checkout(self._drive, cmd_args),
+            'branch': lambda: Branch(cmd_args),
+            'checkout': lambda: Checkout(cmd_args),
             'help': lambda: Help(),
-            'init': lambda: Init(self._drive, cmd_args),
-            'remote': lambda: Remote(self._drive, cmd_args)
+            'init': lambda: Init(cmd_args),
+            'remote': lambda: Remote(cmd_args)
         }.get(cmd, lambda: Invalid())()
 
 
@@ -81,9 +78,9 @@ class FogCommand(object):
     _drive = None
     _args = None
 
-    def __init__(self, drive=None, args=None):
+    def __init__(self, args=None):
         self._args = args
-        self._drive = drive
+        self._drive = device.get()
 
     def execute(self, **kwargs):
         pass
@@ -160,6 +157,8 @@ class Remote(FogCommand):
 class RemoteAdd(FogCommand):
 
     def execute(self, **kwargs):
+        # prompt if remote exists
+        # create remote
         pass
 
 

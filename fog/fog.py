@@ -4,15 +4,13 @@ import sys
 
 from command import CommandParser
 from command import CommandInvoker
-from device import GoogleDrive
 
 
 def main():
     # parse arguments and get command
     # execute command
-    drive = GoogleDrive()
 
-    parser = CommandParser(drive)
+    parser = CommandParser()
     command = parser.parse(sys.argv)
 
     invoker = CommandInvoker()

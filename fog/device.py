@@ -2,6 +2,7 @@ __author__ = 'Raghav Sidhanti'
 
 from inout import StdIn
 from configuration import Conf
+from configuration import ConfUtil
 
 from apiclient.discovery import build
 from httplib2 import Http
@@ -14,9 +15,17 @@ from oauth2client.client import OAuth2WebServerFlow
 
 def get():
     # get configs
+    checkout = ConfUtil.get_checkout()
     # retrieve active drive
-    # provide config and create instance
-    pass
+    if checkout:
+        return _get_drive(checkout)
+    return None
+
+
+def _get_drive(name):
+    return {
+        Conf.GOOGLE_DRIVE_NAME: lambda: GoogleDrive()
+    }.get(name)()
 
 
 class Drive(object):
