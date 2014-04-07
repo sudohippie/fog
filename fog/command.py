@@ -70,7 +70,7 @@ class CommandParser(object):
             'help': lambda: Help(),
             'init': lambda: Init(cmd_args),
             'remote': lambda: Remote(cmd_args)
-        }.get(cmd, lambda: Invalid())()
+        }.get(cmd, lambda: Invalid(cmd_args))()
 
 
 class FogCommand(object):
@@ -144,6 +144,22 @@ class Branch(FogCommand):
 
 
 class Remote(FogCommand):
+
+    def execute(self, **kwargs):
+        remote = None
+        if len(self._args) == 0:
+            remote = RemoteList(self._args)
+        else:
+            remote_cmd = self._args[1]
+            remote = {
+                'add': lambda: RemoteAdd(self._args),
+                'rm': lambda: None
+            }.get(remote_cmd, lambda: Invalid(self._args))()
+
+        remote.execute(kwargs)
+
+
+class RemoteList(Remote):
 
     def execute(self, **kwargs):
         # find all the drive config

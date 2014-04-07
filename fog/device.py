@@ -18,14 +18,15 @@ def get():
     checkout = ConfUtil.get_checkout()
     # retrieve active drive
     if checkout:
-        return _get_drive(checkout)
+        return _get_drive('Goog')
     return None
 
 
 def _get_drive(name):
     return {
-        Conf.GOOGLE_DRIVE_NAME: lambda: GoogleDrive()
-    }.get(name)()
+        Conf.GOOGLE_DRIVE_NAME: lambda: GoogleDrive(),
+        Conf.DROP_BOX_NAME: lambda: None
+    }.get(name, lambda: None)()
 
 
 class Drive(object):
