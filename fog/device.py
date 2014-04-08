@@ -25,8 +25,8 @@ def get_active_drive():
 
 def get_drive(name):
     return {
-        Conf.GOOGLE_DRIVE_NAME: lambda: GoogleDrive(),
-        Conf.DROP_BOX_NAME: lambda: None
+        Conf.GOOGLE: lambda: GoogleDrive(),
+        Conf.DB: lambda: None
     }.get(name, lambda: None)()
 
 
@@ -52,7 +52,7 @@ class GoogleDrive(Drive):
 
     def __get_credentials(self):
 
-        storage = Storage(ConfUtil.get_drive_prop(Conf.GOOGLE_DRIVE_NAME, Conf.CREDENTIALS))
+        storage = Storage(ConfUtil.get_drive_prop(Conf.GOOGLE, Conf.CREDENTIALS))
         credentials = storage.get()
 
         # if no credentials

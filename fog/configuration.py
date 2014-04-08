@@ -24,37 +24,37 @@ class Conf(object):
     CREDENTIALS = 'CREDENTIALS'
 
     # google
-    GOOGLE_DRIVE_NAME = 'googledrive'
-    _GOOGLE_DRIVE_HOME = ''.join([HOME, '/', GOOGLE_DRIVE_NAME])
-    _GOOGLE_DRIVE_CREDENTIALS = ''.join([_GOOGLE_DRIVE_HOME, '/auth.dat'])
-    _google_drive = DriveConf(
-        DRIVE_NAME=GOOGLE_DRIVE_NAME,
-        DRIVE_HOME=_GOOGLE_DRIVE_HOME,
-        CREDENTIALS=_GOOGLE_DRIVE_CREDENTIALS
+    GOOGLE = 'googledrive'
+    _GOOGLE_HOME = ''.join([HOME, '/', GOOGLE])
+    _GOOGLE_CREDENTIALS = ''.join([_GOOGLE_HOME, '/auth.dat'])
+    _google = DriveConf(
+        DRIVE_NAME=GOOGLE,
+        DRIVE_HOME=_GOOGLE_HOME,
+        CREDENTIALS=_GOOGLE_CREDENTIALS
     )
 
 
     # sky drive
-    SKY_DRIVE_NAME = 'skydrive'
-    _SKY_DRIVE_HOME = ''.join([HOME, '/', SKY_DRIVE_NAME])
-    _sky_drive = DriveConf(
-        DRIVE_NAME=SKY_DRIVE_NAME,
-        DRIVE_HOME=_SKY_DRIVE_HOME
+    MS = 'skydrive'
+    _MS_HOME = ''.join([HOME, '/', MS])
+    _ms = DriveConf(
+        DRIVE_NAME=MS,
+        DRIVE_HOME=_MS_HOME
     )
 
     # drop box
-    DROP_BOX_NAME = 'dropbox'
-    _DROP_BOX_HOME = ''.join([HOME, '/', DROP_BOX_NAME])
-    _drop_box = DriveConf(
-        DRIVE_NAME=DROP_BOX_NAME,
-        DRIVE_HOME=_DROP_BOX_HOME
+    DB = 'dropbox'
+    _DB_HOME = ''.join([HOME, '/', DB])
+    _db = DriveConf(
+        DRIVE_NAME=DB,
+        DRIVE_HOME=_DB_HOME
     )
 
     # available branches
     drives = {
-        GOOGLE_DRIVE_NAME: _google_drive,
-        SKY_DRIVE_NAME: _sky_drive,
-        DROP_BOX_NAME: _drop_box
+        GOOGLE: _google,
+        MS: _ms,
+        DB: _db
     }
 
 
