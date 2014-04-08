@@ -49,6 +49,7 @@ class Drive(object):
 
 class GoogleDrive(Drive):
     __drive = None
+    __http = None
 
     def __get_credentials(self):
 
@@ -73,18 +74,114 @@ class GoogleDrive(Drive):
 
         return credentials
 
+    def __find_meta(self, title):
+        # preconditions
+        if not title:
+            # todo missing file name for meta download
+            return
+
+        # download meta until file is found
+        req = self.__drive.files().list()
+        while req:
+            resp = req.execute()
+            metas = resp.get('items')
+            for meta in metas:
+                if metas.get('title') == title:
+                    return meta
+            # paginate
+            req = self.__drive.files().list_next(req, resp)
+
+        return None
+
+    def __find_child_metas(self, meta, titles):
+        # exit condition, if title is len == 0 return meta
+        if titles is None or len(titles) == 0:
+            return []
+        if meta is None:
+            return None
+
+        title = titles.pop(0)
+
+        # get children for meta
+        resp = self.__drive.children().list(folderId=meta.get('id')).execute()
+        children = resp.get('items')
+
+        # search for title amongst children
+        for child in children:
+            child_meta = self.__drive.files().get(fileId=child.get('id')).execute()
+            # if found, save meta and title, recurs
+            if child_meta is not None and child_meta.get('title') == title:
+                child_metas = self.__find_child_metas(child_meta, titles)
+                if child_metas:
+                    # add in-front of the list
+                    child_metas.insert(0, child_meta)
+                    return child_metas
+        return None
+
+    def __get_download_url(self, path):
+        # preconditions
+        if not path:
+            # todo log empty path
+            return
+
+        # split the input path
+        titles = path.split('/')
+        # retrieve meta for first item,
+        root_meta = self.__find_meta(titles.pop(0).strip())
+        # get metas for its children
+        child_metas = self.__find_child_metas(root_meta, titles)
+
+        metas = []
+        if root_meta:
+            metas.append(root_meta)
+        if child_metas:
+            metas.append(child_metas)
+
+        if len(metas) > 0:
+            last_meta = metas.pop(len(metas) - 1)
+            return last_meta.get('downloadUrl', None)
+        return None
+
+    def __get_content(self, url):
+        if not url:
+            return None
+
+        resp, content = self.__http.request(url)
+
+        if resp.get('status') != 200:
+            # todo log un successful request
+            return None
+
+        return content
+
     def open(self, **kwargs):
 
         credentials = self.__get_credentials()
 
         if credentials is not None:
             # if every thing is good, authorize http and build drive
-            http = credentials.authorize(Http())
-            self.__drive = build('drive', 'v2', http=http)
+            self.__http = credentials.authorize(Http())
+            self.__drive = build('drive', 'v2', http=self.__http)
             return True
 
         return False
 
     def close(self, **kwargs):
         self.__drive = None
+        self.__http = None
 
+    def download(self, **kwargs):
+        # preconditions, check drive state
+        if self.__drive is None:
+            # todo log unauthenticated drive
+            return
+
+        src = kwargs.get('src', None)
+        if not src:
+            # todo log missing src
+            return
+
+        # get download url for file path
+        url = self.__get_download_url(src)
+        # download content
+        return self.__get_content(url)
