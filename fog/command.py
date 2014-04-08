@@ -87,8 +87,12 @@ class FogCommand(object):
     def help(self):
         pass
 
+    def valid(self):
+        pass
+
 
 class Init(FogCommand):
+
     def __reset(self):
         # if home exists, prompt user
         if ConfUtil.exists_home():

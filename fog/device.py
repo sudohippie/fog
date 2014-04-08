@@ -1,5 +1,8 @@
 __author__ = 'Raghav Sidhanti'
 
+import mimetypes
+import fsutil
+
 from inout import StdIn
 from inout import StdOut
 from configuration import Conf
@@ -86,7 +89,7 @@ class GoogleDrive(Drive):
             resp = req.execute()
             metas = resp.get('items')
             for meta in metas:
-                if metas.get('title') == title:
+                if meta.get('title') == title:
                     return meta
             # paginate
             req = self.__drive.files().list_next(req, resp)
@@ -125,7 +128,11 @@ class GoogleDrive(Drive):
             return
 
         # split the input path
-        titles = path.split('/')
+        titles = []
+        for s in path.split('/'):
+            if s:
+                titles.append(s)
+
         # retrieve meta for first item,
         root_meta = self.__find_meta(titles.pop(0).strip())
         # get metas for its children
@@ -139,7 +146,16 @@ class GoogleDrive(Drive):
 
         if len(metas) > 0:
             last_meta = metas.pop(len(metas) - 1)
-            return last_meta.get('downloadUrl', None)
+            url = last_meta.get('downloadUrl', None)
+            if url:
+                return url
+
+            # todo support google document formats
+            export_links = last_meta.get('exportLinks', None)
+            link = export_links.get(export_links.keys()[0])
+            if link:
+                StdOut.display(ignore_prefix=True, msg='Google document formats are not supported at this time.')
+                return None
         return None
 
     def __get_content(self, url):
@@ -148,7 +164,7 @@ class GoogleDrive(Drive):
 
         resp, content = self.__http.request(url)
 
-        if resp.get('status') != 200:
+        if resp.get('status') != '200':
             # todo log un successful request
             return None
 
@@ -177,11 +193,18 @@ class GoogleDrive(Drive):
             return
 
         src = kwargs.get('src', None)
-        if not src:
+        dst = kwargs.get('dst', None)
+        if not src or not dst:
             # todo log missing src
             return
 
         # get download url for file path
         url = self.__get_download_url(src)
         # download content
-        return self.__get_content(url)
+        content = self.__get_content(url)
+        if content:
+            if fsutil.exists(dst):
+                if StdIn.prompt_yes('Existing file ' + dst + ' will be overwritten.'):
+                    fsutil.write(dst, content)
+            else:
+                fsutil.write(dst, content)
