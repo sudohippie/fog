@@ -142,7 +142,8 @@ class GoogleDrive(Drive):
         if root_meta:
             metas.append(root_meta)
         if child_metas:
-            metas.append(child_metas)
+            for child_meta in child_metas:
+                metas.append(child_meta)
 
         if len(metas) > 0:
             last_meta = metas.pop(len(metas) - 1)
