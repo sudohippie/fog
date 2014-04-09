@@ -1,16 +1,15 @@
 __author__ = 'Raghav Sidhanti'
 # from input argument and device - create command instance. Provides the
 # necessary input arguments to command
+from string import Template
 
-_SIMPLE_TEMPLATE = '%s'
-_IND2_SIMPLE_TEMPLATE = ''.join(['  ', _SIMPLE_TEMPLATE])
-_ACTIVE_TEMPLATE = '[%s] %s'
+SIMPLE = '$msg'
+IND2 = '  $msg'
 
-_display_template = {
-    'simple': _SIMPLE_TEMPLATE,
-    'ind2_simple': _IND2_SIMPLE_TEMPLATE,
-    'active': _ACTIVE_TEMPLATE
-}
+
+def get_template(t, **kwargs):
+    s = Template(t)
+    return s.substitute(kwargs)
 
 
 class StdIn(object):
@@ -57,11 +56,6 @@ class StdOut(object):
             print txt % args
 
     @staticmethod
-    def template_display(template='simple', msgs=()):
-        t = _display_template.get(template, None)
-
-        if t is None:
-            # TODO log error: unable to print because of missing template for name
-            return
-
-        print t % msgs
+    def display0(template=SIMPLE, msg=''):
+        txt = get_template(template, msg=msg)
+        print txt
