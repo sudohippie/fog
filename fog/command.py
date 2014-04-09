@@ -164,7 +164,7 @@ class Branch(FogCommand):
             mark = message.NO
             if name == checkout:
                 mark = message.YES
-            StdOut.display(msg=message.get(message.STATUS, mark=mark))
+            StdOut.display(msg=message.get(message.STATUS, mark=mark, drive=name))
 
 
 class Remote(FogCommand):
@@ -198,7 +198,7 @@ class RemoteList(Remote):
             mark = message.NO
             if ConfUtil.exists_drive(name):
                 mark = message.YES
-            StdOut.display(msg=message.get(message.STATUS, mark=mark))
+            StdOut.display(msg=message.get(message.STATUS, mark=mark, drive=name))
 
 
 class RemoteAdd(FogCommand):
@@ -215,11 +215,11 @@ class RemoteAdd(FogCommand):
             StdOut.display(msg=message.get(message.REMOTE_EXISTS, drive=drive_name))
             return
 
-        # create configs home
-        ConfUtil.create_drive(drive_name)
-
         drive = device.get_drive(drive_name)
         if drive is not None:
+            # create configs home
+            ConfUtil.create_drive(drive_name)
+
             # create remote
             drive.open(**kwargs)
             drive.close(*kwargs)
@@ -299,7 +299,6 @@ class Help(FogCommand):
         msgs = [
             'usage: fog <command> [<args>]',
             'Commonly used fog commands are:',
-            '',
             'branch         List available drives',
             'checkout       Checkout a drive',
             'init           Create an empty fog directory or reinitialize an existing one',
@@ -311,8 +310,8 @@ class Help(FogCommand):
             'rm             Move a file on remote drive to trash'
         ]
 
-        for idx in range(0, 3, 1):
+        for idx in range(0, 2, 1):
             StdOut.display(msg=msgs[idx])
 
-        for idx in range(3, len(msgs), 1):
-            StdOut.display(template=StdOut.IND2, msgs[idx])
+        for idx in range(2, len(msgs), 1):
+            StdOut.display(template=StdOut.IND2, msg=msgs[idx])
