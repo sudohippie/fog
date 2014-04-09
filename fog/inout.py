@@ -3,14 +3,6 @@ __author__ = 'Raghav Sidhanti'
 # necessary input arguments to command
 from string import Template
 
-SIMPLE = '$msg'
-IND2 = '  $msg'
-
-
-def get_template(t, **kwargs):
-    s = Template(t)
-    return s.substitute(kwargs)
-
 
 class StdIn(object):
     @staticmethod
@@ -28,6 +20,9 @@ class StdIn(object):
 
 
 class StdOut(object):
+    SIMPLE = '$msg'
+    IND2 = '  $msg'
+
     @staticmethod
     def display(**kwargs):
         prefix = kwargs.get('prefix', None)
@@ -57,5 +52,6 @@ class StdOut(object):
 
     @staticmethod
     def display0(template=SIMPLE, msg=''):
-        txt = get_template(template, msg=msg)
+        t = Template(template)
+        txt = t.substitute(msg=msg)
         print txt
