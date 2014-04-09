@@ -79,12 +79,6 @@ class GoogleDrive(Drive):
 
         return credentials
 
-    def __download_folder(self, meta=None, dst=None):
-        pass
-
-    def __download_file(self, meta=None, dst=None):
-        pass
-
     def __find_meta(self, path=''):
         # preconditions
         if not path:
@@ -199,6 +193,6 @@ class GoogleDrive(Drive):
             # todo log missing src
             return
 
-        # find file meta
+        # find and persist
         meta = self.__find_meta(src)
         self.__write(meta, dst)

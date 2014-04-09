@@ -24,7 +24,9 @@ _DRIVE_NOT_IMPLEMENTED = 'Unfortunately %s is not yet implemented. We are workin
 
 
 class CommandInvoker(object):
+
     def invoke(self, command):
+
         if command is not None:
             # check state
             if not ConfUtil.valid_state():
@@ -32,7 +34,10 @@ class CommandInvoker(object):
                     StdOut.display(ignore_prefix=True, msg=_NOT_FOG_MSG, args=('init', 'help'))
                     return
 
-            command.execute()
+            if command.valid():
+                command.execute()
+            else:
+                StdOut.display(ignore_prefix=True, msg=_INVALID_ARGS, args='help')
 
 
 class CommandParser(object):
@@ -71,14 +76,16 @@ class CommandParser(object):
             'checkout': lambda: Checkout(cmd_args),
             'help': lambda: Help(),
             'init': lambda: Init(cmd_args),
-            'remote': lambda: Remote(cmd_args)
+            'remote': lambda: Remote(cmd_args),
+            'pull': lambda: Pull(cmd_args)
         }.get(cmd, lambda: Invalid(cmd_args))()
 
 
 class FogCommand(object):
-    _args = None
 
-    def __init__(self, args=None):
+    _args = []
+
+    def __init__(self, args=[]):
         self._args = args
 
     def execute(self, **kwargs):
@@ -88,6 +95,24 @@ class FogCommand(object):
         pass
 
     def valid(self):
+        if self._args is None:
+            return False
+
+        # clean the arguments
+        strip_args = []
+        for arg in self._args:
+            if arg:
+                strip_args.append(arg)
+
+        self._args = strip_args
+
+        return self._validate()
+
+    def _validate(self):
+        return True
+
+    @staticmethod
+    def name():
         pass
 
 
@@ -109,6 +134,7 @@ class Init(FogCommand):
 
 
 class Checkout(FogCommand):
+
     def execute(self, **kwargs):
 
         # check whether drive is valid
@@ -121,7 +147,6 @@ class Checkout(FogCommand):
 
             ConfUtil.checkout(drive_name)
 
-
     def __validate_args(self):
         if len(self._args) == 1:
             return True
@@ -129,6 +154,7 @@ class Checkout(FogCommand):
 
 
 class Branch(FogCommand):
+
     def execute(self, **kwargs):
 
         # read checkout file
@@ -144,6 +170,7 @@ class Branch(FogCommand):
 
 
 class Remote(FogCommand):
+
     def __get_remote(self, cmd):
         return {
             '': lambda: RemoteList(self._args),
@@ -164,6 +191,7 @@ class Remote(FogCommand):
 
 
 class RemoteList(Remote):
+
     def execute(self, **kwargs):
         # find all the drive config
         for name, drive in Conf.drives.items():
@@ -174,6 +202,7 @@ class RemoteList(Remote):
 
 
 class RemoteAdd(FogCommand):
+
     def execute(self, **kwargs):
         drive_name = self._args[1]
 
@@ -200,6 +229,7 @@ class RemoteAdd(FogCommand):
 
 
 class RemoteRm(FogCommand):
+
     def execute(self, **kwargs):
         drive_name = self._args[1]
 
@@ -213,6 +243,38 @@ class RemoteRm(FogCommand):
             return
 
         ConfUtil.remove_drive(drive_name)
+
+
+class Pull(FogCommand):
+
+    @staticmethod
+    def name():
+        return 'pull'
+
+    def _validate(self):
+        # must have 2 or 3 arguments
+        if len(self._args) != 1 and len(self._args) != 2:
+            return False
+        return True
+
+    def execute(self, **kwargs):
+        # validate inputs
+        src = self._args[0].strip()
+        dst = src
+        if len(self._args) == 2:
+            dst = self._args[1].strip()
+
+        drive = device.get_active_drive()
+        if drive is None:
+            StdOut.display(ignore_prefix=True, msg=_NO_CHECKOUT_MSG, args='help')
+            return
+
+        # open connection
+        drive.open()
+        # pull
+        drive.download(src=src, dst=dst)
+        #close
+        drive.close()
 
 
 class Invalid(FogCommand):
