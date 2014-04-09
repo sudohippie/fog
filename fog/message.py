@@ -2,7 +2,30 @@ __author__ = 'Raghav Sidhanti'
 
 from string import Template
 
+# info
+REMOTE_EXISTS = '$drive is tracked. Try "remote rm" to un-track and try again or $home.'
+HOME_EXISTS = 'Already initialized. You may reinitialize by erasing existing configurations.'
+HELP = '"help" for usage'
+YES = '*'
+NO = ' '
+STATUS = '[$mark] $drive'
+
+# error
+MISSING_REMOTE = '$drive is not tracked. Try "remote add" to track or $help.'
+MISSING_CHECKOUT = 'No checkout. Try $help.'
+MISSING_HOME = 'Not a fog directory (missing .fog). Try "init" to initialize or $help.'
+MISSING_IMPLEMENTATION = 'Unfortunately $drive is not yet implemented. We are working on it.'
+INVALID_DRIVE_NAME = 'Invalid drive $drive. Try "branch" for drive names or $help.'
+INVALID_ARGS = 'Invalid input argument(s). Try $help.'
+
 
 def get(msg, **kwargs):
+
+    if kwargs is None:
+        kwargs = {}
+
+    if kwargs.get('help', None) is None:
+        kwargs['help'] = HELP
+
     s = Template(msg)
     return s.substitute(kwargs)

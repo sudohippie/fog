@@ -4,7 +4,7 @@ import fog.message
 
 
 def string_test():
-    s = fog.message.get('$who, world', who='hello')
+    s = fog.message.get(fog.message.MISSING_IMPLEMENTATION, drive='googledrive')
     print s
 
 
