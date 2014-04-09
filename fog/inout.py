@@ -24,34 +24,7 @@ class StdOut(object):
     IND2 = '  $msg'
 
     @staticmethod
-    def display(**kwargs):
-        prefix = kwargs.get('prefix', None)
-        ignore_prefix = kwargs.get('ignore_prefix', False)
-        msg = kwargs.get('msg', '')
-        args = kwargs.get('args', None)
-
-        if prefix is None:
-            prefix = 'fog'
-
-        txt_list = []
-
-        if not ignore_prefix:
-            txt_list.append('[')
-            txt_list.append(prefix)
-            txt_list.append(']')
-            txt_list.append(' ')
-
-        txt_list.append(msg)
-
-        txt = ''.join(txt_list)
-
-        if args is None:
-            print txt
-        else:
-            print txt % args
-
-    @staticmethod
-    def display0(template=SIMPLE, msg=''):
+    def display(template=SIMPLE, msg=''):
         t = Template(template)
         txt = t.substitute(msg=msg)
         print txt

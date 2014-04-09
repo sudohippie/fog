@@ -9,6 +9,9 @@ HELP = '"help" for usage'
 YES = '*'
 NO = ' '
 STATUS = '[$mark] $drive'
+GOOGLE_ID = 'Enter Google client id'
+GOOGLE_SECRET = 'Enter Google client secret'
+GOOGLE_CONSENT = 'Google requires your consent. Check your default browser to accept access privileges.'
 
 # error
 MISSING_REMOTE = '$drive is not tracked. Try "remote add" to track or $help.'

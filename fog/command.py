@@ -1,6 +1,7 @@
 __author__ = 'Raghav Sidhanti'
 
 import device
+import message
 
 from inout import StdIn
 from inout import StdOut
@@ -11,18 +12,6 @@ from configuration import ConfUtil
 # every command defines default pre and post steps.
 # executes appropriate methods on services
 
-_INIT_MSG = 'Already initialized. You may reinitialize by erasing existing configurations.'
-_NO_CHECKOUT_MSG = 'No checkout branch. Try "%s" for usage.'
-_INVALID_DRIVE_MSG = 'Invalid drive. Try "%s" for drive names or "%s" for usage.'
-_ACTIVE_SIGN = '*'
-_INACTIVE_SIGN = ' '
-_INVALID_ARGS = 'Invalid input argument(s). Try "%s" for usage.'
-_NOT_FOG_MSG = 'Not a fog directory (missing .fog). Try "%s" to initialize or "%s" for usage.'
-_TRACKED_DRIVE = 'Drive %s is already tracked. Try "%s" to un-track and try again or "%s" for usage.'
-_NOT_TRACKED_DRIVE = 'Drive %s is not tracked. Try "%s" to track or "%s" for usage.'
-_DRIVE_NOT_IMPLEMENTED = 'Unfortunately %s is not yet implemented. We are working on it and will release it soon.'
-
-
 class CommandInvoker(object):
     def invoke(self, command):
 
@@ -32,7 +21,7 @@ class CommandInvoker(object):
         # if in new state, can execute only init, help and invalid
         if not ConfUtil.exists_home():
             if not isinstance(command, Help) and not isinstance(command, Init) and not isinstance(command, Invalid):
-                StdOut.display(ignore_prefix=True, msg=_NOT_FOG_MSG, args=('init', 'help'))
+                StdOut.display(msg=message.get(message.MISSING_HOME))
                 return
         else:
             # if in ready state, all commands can be executed
@@ -125,7 +114,7 @@ class Init(FogCommand):
     def __reset(self):
         # if home exists, prompt user
         if ConfUtil.exists_home():
-            if StdIn.prompt_yes(_INIT_MSG):
+            if StdIn.prompt_yes(message.HOME_EXISTS):
                 ConfUtil.remove_home()
             else:
                 return False
@@ -149,7 +138,7 @@ class Checkout(FogCommand):
             drive_name = self._args[0]
 
             if not ConfUtil.valid_drive(drive_name):
-                StdOut.display(msg=_INVALID_DRIVE_MSG, args=('branch', 'help'), ignore_prefix=True)
+                StdOut.display(msg=message.get(message.INVALID_DRIVE_NAME, drive=drive_name))
                 return
 
             ConfUtil.checkout(drive_name)
@@ -172,11 +161,10 @@ class Branch(FogCommand):
 
         # read branches and compare with checkout
         for name in Conf.drives.keys():
-            prefix = _INACTIVE_SIGN
+            mark = message.NO
             if name == checkout:
-                prefix = _ACTIVE_SIGN
-
-            StdOut.display(prefix=prefix, msg=name)
+                mark = message.YES
+            StdOut.display(msg=message.get(message.STATUS, mark=mark))
 
 
 class Remote(FogCommand):
@@ -207,10 +195,10 @@ class RemoteList(Remote):
     def execute(self, **kwargs):
         # find all the drive config
         for name, drive in Conf.drives.items():
-            prefix = _INACTIVE_SIGN
+            mark = message.NO
             if ConfUtil.exists_drive(name):
-                prefix = _ACTIVE_SIGN
-            StdOut.display(prefix=prefix, msg=name)
+                mark = message.YES
+            StdOut.display(msg=message.get(message.STATUS, mark=mark))
 
 
 class RemoteAdd(FogCommand):
@@ -219,12 +207,12 @@ class RemoteAdd(FogCommand):
 
         # reject invalid drive names
         if not ConfUtil.valid_drive(drive_name):
-            StdOut.display(msg=_INVALID_DRIVE_MSG, args=('branch', 'help'), ignore_prefix=True)
+            StdOut.display(msg=message.get(message.INVALID_DRIVE_NAME, drive=drive_name))
             return
 
         # reject if already tracked
         if ConfUtil.exists_drive(drive_name):
-            StdOut.display(ignore_prefix=True, msg=_TRACKED_DRIVE, args=(drive_name, 'remote rm', 'help'))
+            StdOut.display(msg=message.get(message.REMOTE_EXISTS, drive=drive_name))
             return
 
         # create configs home
@@ -236,7 +224,7 @@ class RemoteAdd(FogCommand):
             drive.open(**kwargs)
             drive.close(*kwargs)
         else:
-            StdOut.display(ignore_prefix=True, msg=_DRIVE_NOT_IMPLEMENTED, args=drive_name)
+            StdOut.display(msg=message.get(message.MISSING_IMPLEMENTATION, drive=drive_name))
 
 
 class RemoteRm(FogCommand):
@@ -245,7 +233,7 @@ class RemoteRm(FogCommand):
 
         # reject invalid drive
         if not ConfUtil.valid_drive(drive_name):
-            StdOut.display(msg=_INVALID_DRIVE_MSG, args=('branch', 'help'), ignore_prefix=True)
+            StdOut.display(msg=message.get(message.INVALID_DRIVE_NAME, drive=drive_name))
             return
 
         if not ConfUtil.exists_drive(drive_name):
@@ -266,12 +254,13 @@ class Pull(FogCommand):
         # make sure drive has been checked out
         checkout = ConfUtil.get_checkout()
         if not checkout:
-            StdOut.display(ignore_prefix=True, msg=_NO_CHECKOUT_MSG, args='help')
+            StdOut.display(msg=message.get(message.MISSING_CHECKOUT))
             return False
 
         # make sure drive is tracked
         if not ConfUtil.exists_drive(checkout):
-            StdOut.display(ignore_prefix=True, msg=_NOT_TRACKED_DRIVE, args=(checkout, 'remote add', 'help'))
+            StdOut.display(msg=message.get(message.MISSING_REMOTE, drive=checkout))
+
             return False
 
         return True
@@ -285,7 +274,7 @@ class Pull(FogCommand):
 
         drive = device.get_active_drive()
         if drive is None:
-            StdOut.display(ignore_prefix=True, msg=_NO_CHECKOUT_MSG, args='help')
+            StdOut.display(msg=message.get(message.MISSING_CHECKOUT))
             return
 
         # open connection
@@ -298,7 +287,7 @@ class Pull(FogCommand):
 
 class Invalid(FogCommand):
     def execute(self, **kwargs):
-        StdOut.display(msg=_INVALID_ARGS, args='help', ignore_prefix=True)
+        StdOut.display(msg=message.get(message.INVALID_ARGS))
 
 
 class Help(FogCommand):
@@ -308,17 +297,22 @@ class Help(FogCommand):
 
     def execute(self, **kwargs):
         msgs = [
-            'usage: fog <command> [<args>]\n\n',
-            'Commonly used fog commands are:\n',
-            '  branch         List available drives\n',
-            '  checkout       Checkout a drive\n',
-            '  init           Create an empty fog directory or reinitialize an existing one\n',
-            '  pull           Download files from remote drive\n',
-            '  push           Upload a file to remote drive\n',
-            '  remote         List all the drives being tracked\n',
-            '  remote add     Track a remote drive\n',
-            '  remote rm      Un-track a remote drive\n',
-            '  rm             Move a file on remote drive to trash'
+            'usage: fog <command> [<args>]',
+            'Commonly used fog commands are:',
+            '',
+            'branch         List available drives',
+            'checkout       Checkout a drive',
+            'init           Create an empty fog directory or reinitialize an existing one',
+            'pull           Download files from remote drive',
+            'push           Upload a file to remote drive',
+            'remote         List all the drives being tracked',
+            'remote add     Track a remote drive',
+            'remote rm      Un-track a remote drive',
+            'rm             Move a file on remote drive to trash'
         ]
 
-        StdOut.display(msg=''.join(msgs), ignore_prefix=True)
+        for idx in range(0, 3, 1):
+            StdOut.display(msg=msgs[idx])
+
+        for idx in range(3, len(msgs), 1):
+            StdOut.display(template=StdOut.IND2, msgs[idx])

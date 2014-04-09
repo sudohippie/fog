@@ -1,6 +1,7 @@
 __author__ = 'Raghav Sidhanti'
 
 import mimetypes
+import message
 import fsutil
 
 from inout import StdIn
@@ -63,18 +64,16 @@ class GoogleDrive(Drive):
 
         # if no credentials
         if credentials is None or credentials.invalid:
-            StdOut.display(ignore_prefix=True, msg='Google credentials are missing or may have been updated.')
             # validate credentials
-            id = StdIn.prompt('Enter Google client id')
-            secret = StdIn.prompt('Enter Google client secret')
+            client_id = StdIn.prompt(message.GOOGLE_ID)
+            client_secret = StdIn.prompt(message.GOOGLE_SECRET)
 
-            if not id or not secret:
+            if not client_id or not client_secret:
                 return None
 
-            StdOut.display(ignore_prefix=True,
-                           msg='Google requires your consent. Check your default browser to accept access privileges.')
+            StdOut.display(msg=message.GOOGLE_CONSENT)
             # run flow and store credentials
-            flow = OAuth2WebServerFlow(id, secret, 'https://www.googleapis.com/auth/drive')
+            flow = OAuth2WebServerFlow(client_id, client_secret, 'https://www.googleapis.com/auth/drive')
             credentials = run(flow, storage)
 
         return credentials
