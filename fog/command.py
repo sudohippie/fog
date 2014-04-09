@@ -24,7 +24,6 @@ _DRIVE_NOT_IMPLEMENTED = 'Unfortunately %s is not yet implemented. We are workin
 
 
 class CommandInvoker(object):
-
     def invoke(self, command):
 
         if command is not None:
@@ -72,17 +71,16 @@ class CommandParser(object):
     def __get_command(self, cmd='', cmd_args=[]):
         # create instance for drive and return
         return {
-            'branch': lambda: Branch(cmd_args),
-            'checkout': lambda: Checkout(cmd_args),
-            'help': lambda: Help(),
-            'init': lambda: Init(cmd_args),
-            'remote': lambda: Remote(cmd_args),
-            'pull': lambda: Pull(cmd_args)
+            Branch.name(): lambda: Branch(cmd_args),
+            Checkout.name(): lambda: Checkout(cmd_args),
+            Help.name(): lambda: Help(),
+            Init.name(): lambda: Init(cmd_args),
+            Remote.name(): lambda: Remote(cmd_args),
+            Pull.name(): lambda: Pull(cmd_args)
         }.get(cmd, lambda: Invalid(cmd_args))()
 
 
 class FogCommand(object):
-
     _args = []
 
     def __init__(self, args=[]):
@@ -117,6 +115,9 @@ class FogCommand(object):
 
 
 class Init(FogCommand):
+    @staticmethod
+    def name():
+        return 'init'
 
     def __reset(self):
         # if home exists, prompt user
@@ -134,6 +135,9 @@ class Init(FogCommand):
 
 
 class Checkout(FogCommand):
+    @staticmethod
+    def name():
+        return 'checkout'
 
     def execute(self, **kwargs):
 
@@ -154,6 +158,9 @@ class Checkout(FogCommand):
 
 
 class Branch(FogCommand):
+    @staticmethod
+    def name():
+        return 'branch'
 
     def execute(self, **kwargs):
 
@@ -170,6 +177,9 @@ class Branch(FogCommand):
 
 
 class Remote(FogCommand):
+    @staticmethod
+    def name():
+        return 'remote'
 
     def __get_remote(self, cmd):
         return {
@@ -191,7 +201,6 @@ class Remote(FogCommand):
 
 
 class RemoteList(Remote):
-
     def execute(self, **kwargs):
         # find all the drive config
         for name, drive in Conf.drives.items():
@@ -202,7 +211,6 @@ class RemoteList(Remote):
 
 
 class RemoteAdd(FogCommand):
-
     def execute(self, **kwargs):
         drive_name = self._args[1]
 
@@ -229,7 +237,6 @@ class RemoteAdd(FogCommand):
 
 
 class RemoteRm(FogCommand):
-
     def execute(self, **kwargs):
         drive_name = self._args[1]
 
@@ -246,7 +253,6 @@ class RemoteRm(FogCommand):
 
 
 class Pull(FogCommand):
-
     @staticmethod
     def name():
         return 'pull'
@@ -283,6 +289,10 @@ class Invalid(FogCommand):
 
 
 class Help(FogCommand):
+    @staticmethod
+    def name():
+        return 'help'
+
     def execute(self, **kwargs):
         msgs = [
             'usage: fog <command> [<args>]\n\n',
