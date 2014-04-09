@@ -10,7 +10,7 @@ class GoogleDriveTest(object):
         drive = GoogleDrive()
         drive.open()
         #c = drive.download(src='/FogTestDoc.txt', dst='/tmp/FogTestDoc.txt')
-        c = drive.download(src='/HelloWorld.txt', dst='/tmp/HelloWorld.txt')
+        c = drive.download(src='tmp/', dst='/tmp/var/')
         #c = drive.download(src='/sudhi_indiagifts_list')
         drive.close()
 

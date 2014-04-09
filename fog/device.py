@@ -54,6 +54,8 @@ class GoogleDrive(Drive):
     __drive = None
     __http = None
 
+    __FOLDER_MIME = 'application/vnd.google-apps.folder'
+
     def __get_credentials(self):
 
         storage = Storage(ConfUtil.get_drive_prop(Conf.GOOGLE, Conf.CREDENTIALS))
@@ -77,87 +79,85 @@ class GoogleDrive(Drive):
 
         return credentials
 
-    def __find_meta(self, title):
-        # preconditions
-        if not title:
-            # todo missing file name for meta download
-            return
+    def __download_folder(self, meta=None, dst=None):
+        pass
 
-        # download meta until file is found
+    def __download_file(self, meta=None, dst=None):
+        pass
+
+    def __find_meta(self, path=''):
+        # preconditions
+        if not path:
+            return None
+
+        # split file and cleanup
+        titles = []
+        for title in path.split('/'):
+            if title:
+                titles.append(title)
+
+        # pick the last element and search for it in google drive
         req = self.__drive.files().list()
         while req:
             resp = req.execute()
             metas = resp.get('items')
             for meta in metas:
-                if meta.get('title') == title:
-                    return meta
+                index = len(titles) - 1
+                # if found,
+                if meta.get('title') == titles[index]:
+                    # retrieve its ancestors and compare against titles
+                    parent = meta.get('parents')[0]
+                    while True:
+                        # if is root and reached end, return
+                        if parent.get('isRoot') and index == 0:
+                            return meta
+
+                        # if not reached end and equal titles, continue
+                        if not parent.get('isRoot') and index > 0:
+                            index -= 1
+                            anc = self.__drive.files().get(fileId=parent.get('id')).execute()
+                            if anc.get('title') == titles[index]:
+                                parent = anc.get('parents')[0]
+                                continue
+                        break
             # paginate
             req = self.__drive.files().list_next(req, resp)
 
-        return None
-
-    def __find_child_metas(self, meta, titles):
-        # exit condition, if title is len == 0 return meta
-        if titles is None or len(titles) == 0:
-            return []
-        if meta is None:
-            return None
-
-        title = titles.pop(0)
-
-        # get children for meta
-        resp = self.__drive.children().list(folderId=meta.get('id')).execute()
-        children = resp.get('items')
-
-        # search for title amongst children
-        for child in children:
-            child_meta = self.__drive.files().get(fileId=child.get('id')).execute()
-            # if found, save meta and title, recurs
-            if child_meta is not None and child_meta.get('title') == title:
-                child_metas = self.__find_child_metas(child_meta, titles)
-                if child_metas:
-                    # add in-front of the list
-                    child_metas.insert(0, child_meta)
-                    return child_metas
-        return None
-
-    def __get_download_url(self, path):
-        # preconditions
-        if not path:
-            # todo log empty path
+    def __write(self, meta, dst):
+        if meta is None or not dst:
             return
 
-        # split the input path
-        titles = []
-        for s in path.split('/'):
-            if s:
-                titles.append(s)
+        # if folder, persist all its children
+        if meta.get('mimeType') == self.__FOLDER_MIME:
+            self.__write_folder(meta, dst)
+        else:
+            self.__write_file(meta, dst)
 
-        # retrieve meta for first item,
-        root_meta = self.__find_meta(titles.pop(0).strip())
-        # get metas for its children
-        child_metas = self.__find_child_metas(root_meta, titles)
+        # if file, persist
 
-        metas = []
-        if root_meta:
-            metas.append(root_meta)
-        if child_metas:
-            for child_meta in child_metas:
-                metas.append(child_meta)
+    def __write_file(self, meta, dst):
+        url = meta.get('downloadUrl', None)
+        # todo google document types not supported at this time
+        content = self.__get_content(url)
+        if content:
+            fsutil.write(dst, content)
 
-        if len(metas) > 0:
-            last_meta = metas.pop(len(metas) - 1)
-            url = last_meta.get('downloadUrl', None)
-            if url:
-                return url
+    def __write_folder(self, meta, dst):
+        # create folder if it does not exist
+        if not fsutil.exists(dst):
+            fsutil.create_dir(dst)
 
-            # todo support google document formats
-            export_links = last_meta.get('exportLinks', None)
-            link = export_links.get(export_links.keys()[0])
-            if link:
-                StdOut.display(ignore_prefix=True, msg='Google document formats are not supported at this time.')
-                return None
-        return None
+        # list all its children,
+        children = self.__drive.children().list(folderId=meta.get('id')).execute()
+        for child in children.get('items'):
+            child_meta = self.__drive.files().get(fileId=child.get('id')).execute()
+            child_dst = ''.join([dst, child_meta.get('title')])
+            # if child is folder, recurs
+            if child_meta.get('mimeType') == self.__FOLDER_MIME:
+                self.__write_folder(child_meta, child_dst + '/')
+            # if child is file, write it to folder
+            else:
+                self.__write_file(child_meta, child_dst)
 
     def __get_content(self, url):
         if not url:
@@ -199,13 +199,6 @@ class GoogleDrive(Drive):
             # todo log missing src
             return
 
-        # get download url for file path
-        url = self.__get_download_url(src)
-        # download content
-        content = self.__get_content(url)
-        if content:
-            if fsutil.exists(dst):
-                if StdIn.prompt_yes('Existing file ' + dst + ' will be overwritten.'):
-                    fsutil.write(dst, content)
-            else:
-                fsutil.write(dst, content)
+        # find file meta
+        meta = self.__find_meta(src)
+        self.__write(meta, dst)
