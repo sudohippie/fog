@@ -19,24 +19,27 @@ _INACTIVE_SIGN = ' '
 _INVALID_ARGS = 'Invalid input argument(s). Try "%s" for usage.'
 _NOT_FOG_MSG = 'Not a fog directory (missing .fog). Try "%s" to initialize or "%s" for usage.'
 _TRACKED_DRIVE = 'Drive %s is already tracked. Try "%s" to un-track and try again or "%s" for usage.'
-_NOT_TRACKED_DRIVE = 'Drive %s is not tracked. Nothing to do here.'
+_NOT_TRACKED_DRIVE = 'Drive %s is not tracked. Try "%s" to track or "%s" for usage.'
 _DRIVE_NOT_IMPLEMENTED = 'Unfortunately %s is not yet implemented. We are working on it and will release it soon.'
 
 
 class CommandInvoker(object):
     def invoke(self, command):
 
-        if command is not None:
-            # check state
-            if not ConfUtil.valid_state():
-                if not isinstance(command, Help) and not isinstance(command, Init) and not isinstance(command, Invalid):
-                    StdOut.display(ignore_prefix=True, msg=_NOT_FOG_MSG, args=('init', 'help'))
-                    return
+        if command is None:
+            return
 
-            if command.valid():
-                command.execute()
-            else:
-                StdOut.display(ignore_prefix=True, msg=_INVALID_ARGS, args='help')
+        # if in new state, can execute only init, help and invalid
+        if not ConfUtil.exists_home():
+            if not isinstance(command, Help) and not isinstance(command, Init) and not isinstance(command, Invalid):
+                StdOut.display(ignore_prefix=True, msg=_NOT_FOG_MSG, args=('init', 'help'))
+                return
+        else:
+            # if in ready state, all commands can be executed
+            pass
+
+        if command.valid():
+            command.execute()
 
 
 class CommandParser(object):
@@ -246,7 +249,6 @@ class RemoteRm(FogCommand):
             return
 
         if not ConfUtil.exists_drive(drive_name):
-            StdOut.display(ignore_prefix=True, msg=_NOT_TRACKED_DRIVE, args=drive_name)
             return
 
         ConfUtil.remove_drive(drive_name)
@@ -258,9 +260,20 @@ class Pull(FogCommand):
         return 'pull'
 
     def _validate(self):
-        # must have 2 or 3 arguments
         if len(self._args) != 1 and len(self._args) != 2:
             return False
+
+        # make sure drive has been checked out
+        checkout = ConfUtil.get_checkout()
+        if not checkout:
+            StdOut.display(ignore_prefix=True, msg=_NO_CHECKOUT_MSG, args='help')
+            return False
+
+        # make sure drive is tracked
+        if not ConfUtil.exists_drive(checkout):
+            StdOut.display(ignore_prefix=True, msg=_NOT_TRACKED_DRIVE, args=(checkout, 'remote add', 'help'))
+            return False
+
         return True
 
     def execute(self, **kwargs):
