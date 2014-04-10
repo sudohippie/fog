@@ -8,11 +8,10 @@ from command import CommandInvoker
 
 def main():
     # parse arguments and get command
-    # execute command
-
     parser = CommandParser()
-    command = parser.parse(sys.argv)
+    command = parser.parse(sys.argv[1:])
 
+    # execute command
     invoker = CommandInvoker()
     invoker.invoke(command)
 

@@ -12,7 +12,9 @@ from configuration import ConfUtil
 # every command defines default pre and post steps.
 # executes appropriate methods on services
 
+
 class CommandInvoker(object):
+
     def invoke(self, command):
 
         if command is None:
@@ -32,44 +34,28 @@ class CommandInvoker(object):
 
 
 class CommandParser(object):
-    def parse(self, args):
-        inputs = self.__clean(args)
 
-        cmd = str(inputs[0]).lower()
-        cmd_args = []
-        for idx in range(1, len(inputs), 1):
-            cmd_args.append(args[idx])
-
-        return self.__get_command(cmd, cmd_args)
-
-    def __clean(self, args):
+    def parse(self, args=['invalid']):
+        # clean the args
         inputs = []
+        for arg in args:
+            if arg:
+                inputs.append(arg)
+        # get command object
+        return self.__get_command(inputs)
 
-        if args is None or len(args) == 1:
-            inputs.append('invalid')
-            return inputs
-
-        # remote fog command
-        args.pop(0)
-
-        # clean multiple spaces
-        if args is not None:
-            for arg in args:
-                if arg:
-                    inputs.append(arg.strip())
-
-        return inputs
-
-    def __get_command(self, cmd='', cmd_args=[]):
+    @staticmethod
+    def __get_command(inputs):
+        args = inputs[1:]
         # create instance for drive and return
         return {
-            Branch.name(): lambda: Branch(cmd_args),
-            Checkout.name(): lambda: Checkout(cmd_args),
-            Help.name(): lambda: Help(),
-            Init.name(): lambda: Init(cmd_args),
-            Remote.name(): lambda: Remote(cmd_args),
-            Pull.name(): lambda: Pull(cmd_args)
-        }.get(cmd, lambda: Invalid(cmd_args))()
+            Branch.name(): lambda: Branch(args),
+            Checkout.name(): lambda: Checkout(args),
+            Help.name(): lambda: Help(inputs),
+            Init.name(): lambda: Init(args),
+            Remote.name(): lambda: Remote(args),
+            Pull.name(): lambda: Pull(args)
+        }.get(inputs[0], lambda: Invalid(args))()
 
 
 class FogCommand(object):
