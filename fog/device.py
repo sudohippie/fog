@@ -57,6 +57,7 @@ class GoogleDrive(Drive):
 
     __FOLDER_MIME = 'application/vnd.google-apps.folder'
 
+    @staticmethod
     def __get_credentials(self):
 
         storage = Storage(ConfUtil.get_drive_prop(Conf.GOOGLE, Conf.CREDENTIALS))
