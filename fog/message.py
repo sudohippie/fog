@@ -14,6 +14,7 @@ GOOGLE_SECRET = 'Enter Google client secret'
 GOOGLE_CONSENT = 'Google requires your consent. Check your default browser to accept access privileges.'
 
 # error
+MISSING_FILE = 'File not found on $location.'
 MISSING_REMOTE = '$drive is not tracked. Try "remote add" to track and try again or $help.'
 MISSING_CHECKOUT = 'No checkout. Try $help.'
 MISSING_HOME = 'Not a fog directory (missing .fog). Try "init" to initialize or $help.'

@@ -2,6 +2,7 @@ __author__ = 'Raghav Sidhanti'
 
 import device
 import message
+import fsutil
 
 from inout import StdIn
 from inout import StdOut
@@ -250,6 +251,7 @@ class RemoteRm(FogCommand):
 
 
 class Pull(FogCommand):
+
     @staticmethod
     def name():
         return 'pull'
@@ -274,9 +276,12 @@ class Pull(FogCommand):
     def execute(self, **kwargs):
         # validate inputs
         src = self._args[0]
-        dst = src
+        file_name = fsutil.filename(src)
+
         if len(self._args) == 2:
-            dst = self._args[1]
+            dst = fsutil.path_append(self._args[1], file_name)
+        else:
+            dst = fsutil.path_append(src, file_name)
 
         drive = device.get_active_drive()
         # open connection

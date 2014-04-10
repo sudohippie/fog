@@ -29,11 +29,15 @@ def get_active_drive():
 
 def get_drive(name):
     return {
-        Conf.GOOGLE: lambda: GoogleDrive()
+        GoogleDrive.name(): lambda: GoogleDrive()
     }.get(name, lambda: None)()
 
 
 class Drive(object):
+    @staticmethod
+    def name():
+        pass
+
     def open(self, **kwargs):
         pass
 
@@ -116,6 +120,7 @@ class GoogleDrive(Drive):
                         break
             # paginate
             req = self.__drive.files().list_next(req, resp)
+        return None
 
     def __write(self, meta, dst):
         if meta is None or not dst:
@@ -158,12 +163,14 @@ class GoogleDrive(Drive):
             return None
 
         resp, content = self.__http.request(url)
-
         if resp.get('status') != '200':
             # todo log un successful request
             return None
-
         return content
+
+    @staticmethod
+    def name():
+        return Conf.GOOGLE
 
     def open(self, **kwargs):
 
@@ -195,4 +202,8 @@ class GoogleDrive(Drive):
 
         # find and persist
         meta = self.__find_meta(src)
-        self.__write(meta, dst)
+        if meta is not None:
+            self.__write(meta, dst)
+        else:
+            # file not found
+            StdOut.display(msg=message.get(message.MISSING_FILE, location=GoogleDrive.name()))
