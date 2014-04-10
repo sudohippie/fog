@@ -29,8 +29,7 @@ def get_active_drive():
 
 def get_drive(name):
     return {
-        Conf.GOOGLE: lambda: GoogleDrive(),
-        Conf.DB: lambda: None
+        Conf.GOOGLE: lambda: GoogleDrive()
     }.get(name, lambda: None)()
 
 
