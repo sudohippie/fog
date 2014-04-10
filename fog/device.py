@@ -69,8 +69,8 @@ class GoogleDrive(Drive):
         # if no credentials
         if credentials is None or credentials.invalid:
             # validate credentials
-            client_id = StdIn.prompt(message.GOOGLE_ID)
-            client_secret = StdIn.prompt(message.GOOGLE_SECRET)
+            client_id = StdIn.prompt(message.get(message.GOOGLE_ID))
+            client_secret = StdIn.prompt(message.get(message.GOOGLE_SECRET))
 
             if not client_id or not client_secret:
                 StdOut.display(msg=message.get(message.INVALID_CREDENTIALS))

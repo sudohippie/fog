@@ -1,22 +1,19 @@
 __author__ = 'Raghav Sidhanti'
 # from input argument and device - create command instance. Provides the
 # necessary input arguments to command
+import message
+
 from string import Template
 
 
 class StdIn(object):
     @staticmethod
     def prompt(msg=''):
-        txt = [msg, ': ']
-        return raw_input(''.join(txt))
+        return raw_input(msg)
 
     @staticmethod
     def prompt_yes(msg=''):
-        txt = [msg,
-               '\n',
-               'Would you like to continue (yes/no)?']
-        resp = StdIn.prompt(''.join(txt))
-        return resp == 'yes'
+        return StdIn.prompt(msg) == message.YES
 
 
 class StdOut(object):

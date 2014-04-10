@@ -85,7 +85,7 @@ class Init(FogCommand):
 
     def valid(self):
         if ConfUtil.exists_home():
-            if StdIn.prompt_yes(message.HOME_EXISTS):
+            if StdIn.prompt_yes(message.get(message.PROMPT, info=message.HOME_EXISTS)):
                 return True
             else:
                 return False
@@ -138,9 +138,9 @@ class Branch(FogCommand):
 
         # read branches and compare with checkout
         for name in Conf.drives.keys():
-            mark = message.NO
+            mark = message.NO_MARK
             if name == checkout:
-                mark = message.YES
+                mark = message.MARK
             StdOut.display(msg=message.get(message.STATUS, mark=mark, drive=name))
 
 
@@ -181,9 +181,9 @@ class RemoteList(Remote):
     def execute(self, **kwargs):
         # find all the drive config
         for name, drive in Conf.drives.items():
-            mark = message.NO
+            mark = message.NO_MARK
             if ConfUtil.exists_drive(name):
-                mark = message.YES
+                mark = message.MARK
             StdOut.display(msg=message.get(message.STATUS, mark=mark, drive=name))
 
 
