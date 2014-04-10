@@ -122,12 +122,12 @@ class Checkout(FogCommand):
 
 
 class Branch(FogCommand):
+
     @staticmethod
     def name():
         return 'branch'
 
     def execute(self, **kwargs):
-
         # read checkout file
         checkout = ConfUtil.get_checkout()
 
@@ -140,30 +140,33 @@ class Branch(FogCommand):
 
 
 class Remote(FogCommand):
+
     @staticmethod
     def name():
         return 'remote'
 
     def __get_remote(self, cmd):
         return {
-            '': lambda: RemoteList(self._args),
-            'add': lambda: RemoteAdd(self._args[1:]),
-            'rm': lambda: RemoteRm(self._args[1:])
+            'remote': lambda: RemoteList(self._args),
+            'remote add': lambda: RemoteAdd(self._args[1:]),
+            'remote rm': lambda: RemoteRm(self._args[1:])
         }.get(cmd, lambda: Invalid(self._args))()
 
     def execute(self, **kwargs):
-        cmd = 'invalid'
-
+        cmd = ['invalid']
         if len(self._args) == 0:
-            cmd = ''
+            cmd = [self.name()]
         elif len(self._args) == 2:
-            cmd = self._args[0]
+            cmd = [self.name(), ' ', self._args[0]]
 
-        remote = self.__get_remote(cmd)
+        remote = self.__get_remote(''.join(cmd))
         remote.execute(**kwargs)
 
 
 class RemoteList(Remote):
+
+    def valid(self):
+        return True
 
     def execute(self, **kwargs):
         # find all the drive config
