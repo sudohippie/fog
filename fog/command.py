@@ -164,6 +164,7 @@ class Remote(FogCommand):
 
 
 class RemoteList(Remote):
+
     def execute(self, **kwargs):
         # find all the drive config
         for name, drive in Conf.drives.items():
@@ -174,27 +175,38 @@ class RemoteList(Remote):
 
 
 class RemoteAdd(FogCommand):
-    def execute(self, **kwargs):
-        drive_name = self._args[1]
 
-        # reject invalid drive names
+    def valid(self):
+        # check argument size
+        if len(self._args) != 1:
+            StdOut.display(msg=message.get(message.INVALID_ARGS))
+            return False
+
+        drive_name = self._args[0]
+        # reject invalid drive
         if not ConfUtil.valid_drive(drive_name):
             StdOut.display(msg=message.get(message.INVALID_DRIVE_NAME, drive=drive_name))
-            return
+            return False
 
-        # reject if already tracked
+        # check if remote exists
         if ConfUtil.exists_drive(drive_name):
             StdOut.display(msg=message.get(message.REMOTE_EXISTS, drive=drive_name))
-            return
+            return False
 
+        return True
+
+    def execute(self, **kwargs):
+        drive_name = self._args[0]
         drive = device.get_drive(drive_name)
         if drive is not None:
             # create configs home
             ConfUtil.create_drive(drive_name)
-
             # create remote
-            drive.open(**kwargs)
-            drive.close(**kwargs)
+            if drive.open(**kwargs):
+                drive.close(**kwargs)
+            else:
+                # don't create home if auth fails
+                ConfUtil.remove_drive(drive_name)
         else:
             StdOut.display(msg=message.get(message.MISSING_IMPLEMENTATION, drive=drive_name))
 
