@@ -40,7 +40,7 @@ class CommandParser(object):
         inputs = []
         for arg in args:
             if arg:
-                inputs.append(arg)
+                inputs.append(arg.strip())
         # get command object
         return self.__get_command(inputs)
 
@@ -71,21 +71,7 @@ class FogCommand(object):
         pass
 
     def valid(self):
-        if self._args is None:
-            return False
-
-        # clean the arguments
-        strip_args = []
-        for arg in self._args:
-            if arg:
-                strip_args.append(arg)
-
-        self._args = strip_args
-
-        return self._validate()
-
-    def _validate(self):
-        return True
+        pass
 
     @staticmethod
     def name():
@@ -161,8 +147,8 @@ class Remote(FogCommand):
     def __get_remote(self, cmd):
         return {
             '': lambda: RemoteList(self._args),
-            'add': lambda: RemoteAdd(self._args),
-            'rm': lambda: RemoteRm(self._args)
+            'add': lambda: RemoteAdd(self._args[1:]),
+            'rm': lambda: RemoteRm(self._args[1:])
         }.get(cmd, lambda: Invalid(self._args))()
 
     def execute(self, **kwargs):
@@ -214,17 +200,28 @@ class RemoteAdd(FogCommand):
 
 
 class RemoteRm(FogCommand):
-    def execute(self, **kwargs):
-        drive_name = self._args[1]
 
+    def valid(self):
+        # check argument size
+        if len(self._args) != 1:
+            StdOut.display(msg=message.get(message.INVALID_ARGS))
+            return False
+
+        drive_name = self._args[0]
         # reject invalid drive
         if not ConfUtil.valid_drive(drive_name):
             StdOut.display(msg=message.get(message.INVALID_DRIVE_NAME, drive=drive_name))
-            return
+            return False
 
+        # check if remote exists
         if not ConfUtil.exists_drive(drive_name):
-            return
+            StdOut.display(msg=message.get(message.MISSING_REMOTE, drive=drive_name))
+            return False
 
+        return True
+
+    def execute(self, **kwargs):
+        drive_name = self._args[0]
         ConfUtil.remove_drive(drive_name)
 
 
@@ -233,7 +230,7 @@ class Pull(FogCommand):
     def name():
         return 'pull'
 
-    def _validate(self):
+    def valid(self):
         if len(self._args) != 1 and len(self._args) != 2:
             return False
 
@@ -246,29 +243,24 @@ class Pull(FogCommand):
         # make sure drive is tracked
         if not ConfUtil.exists_drive(checkout):
             StdOut.display(msg=message.get(message.MISSING_REMOTE, drive=checkout))
-
             return False
 
         return True
 
     def execute(self, **kwargs):
         # validate inputs
-        src = self._args[0].strip()
+        src = self._args[0]
         dst = src
         if len(self._args) == 2:
-            dst = self._args[1].strip()
+            dst = self._args[1]
 
         drive = device.get_active_drive()
-        if drive is None:
-            StdOut.display(msg=message.get(message.MISSING_CHECKOUT))
-            return
-
         # open connection
-        drive.open()
-        # pull
-        drive.download(src=src, dst=dst)
-        #close
-        drive.close()
+        if drive.open():
+            # pull
+            drive.download(src=src, dst=dst)
+            #close
+            drive.close()
 
 
 class Invalid(FogCommand):

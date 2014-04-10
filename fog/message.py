@@ -14,7 +14,7 @@ GOOGLE_SECRET = 'Enter Google client secret'
 GOOGLE_CONSENT = 'Google requires your consent. Check your default browser to accept access privileges.'
 
 # error
-MISSING_REMOTE = '$drive is not tracked. Try "remote add" to track or $help.'
+MISSING_REMOTE = '$drive is not tracked. Try "remote add" to track and try again or $help.'
 MISSING_CHECKOUT = 'No checkout. Try $help.'
 MISSING_HOME = 'Not a fog directory (missing .fog). Try "init" to initialize or $help.'
 MISSING_IMPLEMENTATION = 'Unfortunately $drive is not yet implemented. We are working on it.'
