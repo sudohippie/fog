@@ -16,7 +16,6 @@ from configuration import ConfUtil
 class CommandInvoker(object):
 
     def invoke(self, command):
-
         if command is None:
             return
 
@@ -25,24 +24,13 @@ class CommandInvoker(object):
             if not isinstance(command, Help) and not isinstance(command, Init) and not isinstance(command, Invalid):
                 StdOut.display(msg=message.get(message.MISSING_HOME))
                 return
-        else:
-            # if in ready state, all commands can be executed
-            pass
 
         if command.valid():
+            # if in ready state, all commands can be executed
             command.execute()
 
 
 class CommandParser(object):
-
-    def parse(self, args=['invalid']):
-        # clean the args
-        inputs = []
-        for arg in args:
-            if arg:
-                inputs.append(arg.strip())
-        # get command object
-        return self.__get_command(inputs)
 
     @staticmethod
     def __get_command(inputs):
@@ -56,6 +44,15 @@ class CommandParser(object):
             Remote.name(): lambda: Remote(args),
             Pull.name(): lambda: Pull(args)
         }.get(inputs[0], lambda: Invalid(args))()
+
+    def parse(self, args=['invalid']):
+        # clean the args
+        inputs = []
+        for arg in args:
+            if arg:
+                inputs.append(arg.strip())
+        # get command object
+        return self.__get_command(inputs)
 
 
 class FogCommand(object):
