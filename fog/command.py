@@ -85,7 +85,7 @@ class Init(FogCommand):
 
     def valid(self):
         if ConfUtil.exists_home():
-            if StdIn.prompt_yes(message.get(message.PROMPT, info=message.HOME_EXISTS)):
+            if StdIn.prompt_yes(message.get(message.PROMPT_CONTINUE, info=message.HOME_EXISTS)):
                 return True
             else:
                 return False

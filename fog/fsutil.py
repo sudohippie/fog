@@ -4,8 +4,10 @@ __author__ = 'Raghav Sidhanti'
 
 import os
 import ntpath
+import message
 
 from shutil import rmtree
+from inout import StdIn
 
 
 def abs_path(path=None):
@@ -39,21 +41,25 @@ def read_lines(path=None):
     return lines
 
 
-def write(path=None, data=None):
-    if delete(path):
+def write(path=None, data=None, prompt=False):
+    if delete(path, prompt):
         f = open(abs_path(path), 'wb')
         f.write(data)
         f.close()
 
 
-def delete_dirs(path=None):
+def delete_dirs(path=None, prompt=True):
     if exists(path):
+        if prompt and not StdIn.prompt_yes(message.get(msg=message.PROMPT_OVERWRITE, file=path)):
+            return False
         rmtree(abs_path(path))
     return True
 
 
-def delete(path=None):
+def delete(path=None, prompt=False):
     if exists(path):
+        if prompt and not StdIn.prompt_yes(message.get(msg=message.PROMPT_OVERWRITE, file=path)):
+            return False
         os.remove(abs_path(path))
     return True
 

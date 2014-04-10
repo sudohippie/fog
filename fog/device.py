@@ -139,7 +139,7 @@ class GoogleDrive(Drive):
         # todo google document types not supported at this time
         content = self.__get_content(url)
         if content:
-            fsutil.write(dst, content)
+            fsutil.write(dst, content, True)
 
     def __write_folder(self, meta, dst):
         # create folder if it does not exist

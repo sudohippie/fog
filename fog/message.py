@@ -12,12 +12,11 @@ STATUS = '[$mark] $drive'
 GOOGLE_ID = 'Enter Google client id:'
 GOOGLE_SECRET = 'Enter Google client secret:'
 GOOGLE_CONSENT = 'Google requires your consent. Check your default browser to accept access privileges.'
-OVERWRITE = 'File $file exists and will be overwritten.'
-YES = 'yes'
-NO = 'no'
 
 # prompt
-PROMPT = '$info Continue ($yes/$no)?:'
+PROMPT_OVERWRITE = '$file exists and will be overwritten. $continue'
+PROMPT_CONTINUE = 'Continue (yes/no)?:'
+YES = 'yes'
 
 # error
 MISSING_FILE = 'File not found on $location.'
@@ -39,8 +38,8 @@ def get(msg, **kwargs):
         kwargs['help'] = HELP
     if kwargs.get('yes', None) is None:
         kwargs['yes'] = YES
-    if kwargs.get('no', None) is None:
-        kwargs['no'] = NO
+    if kwargs.get('continue', None) is None:
+        kwargs['continue'] = PROMPT_CONTINUE
 
     s = Template(msg)
     return s.substitute(kwargs)
