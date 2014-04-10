@@ -79,46 +79,49 @@ class FogCommand(object):
 
 
 class Init(FogCommand):
+
     @staticmethod
     def name():
         return 'init'
 
-    def __reset(self):
-        # if home exists, prompt user
+    def valid(self):
         if ConfUtil.exists_home():
             if StdIn.prompt_yes(message.HOME_EXISTS):
-                ConfUtil.remove_home()
+                return True
             else:
                 return False
+
         return True
 
     def execute(self, **kwargs):
         # create home and files
-        if self.__reset():
-            ConfUtil.create_home()
+        ConfUtil.remove_home()
+        ConfUtil.create_home()
 
 
 class Checkout(FogCommand):
+
     @staticmethod
     def name():
         return 'checkout'
 
+    def valid(self):
+        # check argument size
+        if len(self._args) != 1:
+            StdOut.display(msg=message.get(message.INVALID_ARGS))
+            return False
+
+        drive_name = self._args[0]
+        # reject invalid drive
+        if not ConfUtil.valid_drive(drive_name):
+            StdOut.display(msg=message.get(message.INVALID_DRIVE_NAME, drive=drive_name))
+            return False
+
+        return True
+
     def execute(self, **kwargs):
-
-        # check whether drive is valid
-        if self.__validate_args():
-            drive_name = self._args[0]
-
-            if not ConfUtil.valid_drive(drive_name):
-                StdOut.display(msg=message.get(message.INVALID_DRIVE_NAME, drive=drive_name))
-                return
-
-            ConfUtil.checkout(drive_name)
-
-    def __validate_args(self):
-        if len(self._args) == 1:
-            return True
-        return False
+        drive_name = self._args[0]
+        ConfUtil.checkout(drive_name)
 
 
 class Branch(FogCommand):
@@ -126,6 +129,9 @@ class Branch(FogCommand):
     @staticmethod
     def name():
         return 'branch'
+
+    def valid(self):
+        return True
 
     def execute(self, **kwargs):
         # read checkout file
