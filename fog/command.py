@@ -68,7 +68,7 @@ class FogCommand(object):
         pass
 
     def valid(self):
-        pass
+        return True
 
     @staticmethod
     def name():
@@ -282,6 +282,7 @@ class Pull(FogCommand):
 
 
 class Invalid(FogCommand):
+
     def execute(self, **kwargs):
         StdOut.display(msg=message.get(message.INVALID_ARGS))
 
@@ -290,9 +291,6 @@ class Help(FogCommand):
     @staticmethod
     def name():
         return 'help'
-
-    def valid(self):
-        return True
 
     def execute(self, **kwargs):
         msgs = [
