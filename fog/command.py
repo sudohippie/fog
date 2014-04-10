@@ -222,7 +222,7 @@ class RemoteAdd(FogCommand):
 
             # create remote
             drive.open(**kwargs)
-            drive.close(*kwargs)
+            drive.close(**kwargs)
         else:
             StdOut.display(msg=message.get(message.MISSING_IMPLEMENTATION, drive=drive_name))
 
