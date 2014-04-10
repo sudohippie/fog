@@ -52,9 +52,9 @@ class Conf(object):
 
     # available branches
     drives = {
-        GOOGLE: _google,
-        MS: _ms,
-        DB: _db
+        GOOGLE: _google
+        #MS: _ms,
+        #DB: _db
     }
 
 
@@ -115,7 +115,3 @@ class ConfUtil(object):
             return ''
 
         return drive.get(prop_name)
-
-
-
-
