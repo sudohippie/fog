@@ -291,6 +291,9 @@ class Help(FogCommand):
     def name():
         return 'help'
 
+    def valid(self):
+        return True
+
     def execute(self, **kwargs):
         msgs = [
             'usage: fog <command> [<args>]',
