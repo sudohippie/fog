@@ -279,9 +279,9 @@ class Pull(FogCommand):
         file_name = fsutil.filename(src)
 
         if len(self._args) == 2:
-            dst = fsutil.path_append(self._args[1], file_name)
+            dst = fsutil.join_paths(self._args[1], file_name)
         else:
-            dst = fsutil.path_append(src, file_name)
+            dst = fsutil.join_paths(src, file_name)
 
         drive = device.get_active_drive()
         # open connection

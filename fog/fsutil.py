@@ -3,7 +3,6 @@ __author__ = 'Raghav Sidhanti'
 # contains all the basic local file system operations
 
 import os
-import ntpath
 import message
 
 from shutil import rmtree
@@ -74,14 +73,15 @@ def create_dir(path=None):
 def filename(path=None):
     if not path:
         return None
-    return ntpath.basename(path)
+    head, tail = os.path.split(path)
+    return tail or os.path.basename(head)
 
 
-def path_append(path=None, file_name=None):
+def join_paths(path=None, file_name=None):
     if not path and not file_name:
         return None
     if not path:
         return file_name
     if not file_name:
         return path
-    return ntpath.join(path, file_name)
+    return os.path.join(path, file_name)

@@ -130,30 +130,28 @@ class GoogleDrive(Drive):
         if meta.get('mimeType') == self.__FOLDER_MIME:
             self.__write_folder(meta, dst)
         else:
+            # if file, persist
             self.__write_file(meta, dst)
-
-        # if file, persist
 
     def __write_file(self, meta, dst):
         url = meta.get('downloadUrl', None)
         # todo google document types not supported at this time
         content = self.__get_content(url)
-        if content:
-            fsutil.write(dst, content, True)
+        if content is None:
+            StdOut.display(msg=message.get(message.ERROR_DOWNLOAD, file=meta.get('title'), drive=self.name()))
+        fsutil.write(dst, content, True)
 
     def __write_folder(self, meta, dst):
         # create folder if it does not exist
-        if not fsutil.exists(dst):
-            fsutil.create_dir(dst)
-
+        fsutil.create_dir(dst)
         # list all its children,
         children = self.__drive.children().list(folderId=meta.get('id')).execute()
         for child in children.get('items'):
             child_meta = self.__drive.files().get(fileId=child.get('id')).execute()
-            child_dst = ''.join([dst, child_meta.get('title')])
+            child_dst = fsutil.join_paths(dst, child_meta.get('title'))
             # if child is folder, recurs
             if child_meta.get('mimeType') == self.__FOLDER_MIME:
-                self.__write_folder(child_meta, child_dst + '/')
+                self.__write_folder(child_meta, child_dst)
             # if child is file, write it to folder
             else:
                 self.__write_file(child_meta, child_dst)
@@ -164,7 +162,6 @@ class GoogleDrive(Drive):
 
         resp, content = self.__http.request(url)
         if resp.get('status') != '200':
-            # todo log un successful request
             return None
         return content
 
@@ -196,9 +193,6 @@ class GoogleDrive(Drive):
 
         src = kwargs.get('src', None)
         dst = kwargs.get('dst', None)
-        if not src or not dst:
-            # todo log missing src
-            return
 
         # find and persist
         meta = self.__find_meta(src)

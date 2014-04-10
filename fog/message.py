@@ -9,11 +9,11 @@ HELP = '"help" for usage'
 MARK = '*'
 NO_MARK = ' '
 STATUS = '[$mark] $drive'
-GOOGLE_ID = 'Enter Google client id:'
-GOOGLE_SECRET = 'Enter Google client secret:'
 GOOGLE_CONSENT = 'Google requires your consent. Check your default browser to accept access privileges.'
 
 # prompt
+GOOGLE_ID = 'Enter Google client id:'
+GOOGLE_SECRET = 'Enter Google client secret:'
 PROMPT_OVERWRITE = '$file exists and will be overwritten. $continue'
 PROMPT_CONTINUE = 'Continue (yes/no)?:'
 YES = 'yes'
@@ -27,6 +27,7 @@ MISSING_IMPLEMENTATION = 'Unfortunately $drive is not yet implemented. We are wo
 INVALID_DRIVE_NAME = 'Invalid drive $drive. Try "branch" for drive names or $help.'
 INVALID_ARGS = 'Invalid input argument(s). Try $help.'
 INVALID_CREDENTIALS = 'Invalid credentials.'
+ERROR_DOWNLOAD = 'Download failed for $file from $drive.'
 
 
 def get(msg, **kwargs):
