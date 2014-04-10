@@ -57,7 +57,7 @@ class GoogleDrive(Drive):
     __FOLDER_MIME = 'application/vnd.google-apps.folder'
 
     @staticmethod
-    def __get_credentials(self):
+    def __get_credentials():
 
         storage = Storage(ConfUtil.get_drive_prop(Conf.GOOGLE, Conf.CREDENTIALS))
         credentials = storage.get()
@@ -69,6 +69,7 @@ class GoogleDrive(Drive):
             client_secret = StdIn.prompt(message.GOOGLE_SECRET)
 
             if not client_id or not client_secret:
+                StdOut.display(msg=message.get(message.INVALID_CREDENTIALS))
                 return None
 
             StdOut.display(msg=message.GOOGLE_CONSENT)

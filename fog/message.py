@@ -3,7 +3,7 @@ __author__ = 'Raghav Sidhanti'
 from string import Template
 
 # info
-REMOTE_EXISTS = '$drive is tracked. Try "remote rm" to un-track and try again or $home.'
+REMOTE_EXISTS = '$drive is tracked. Try "remote rm" to un-track and try again or $help.'
 HOME_EXISTS = 'Already initialized. You may reinitialize by erasing existing configurations.'
 HELP = '"help" for usage'
 YES = '*'
@@ -20,6 +20,7 @@ MISSING_HOME = 'Not a fog directory (missing .fog). Try "init" to initialize or 
 MISSING_IMPLEMENTATION = 'Unfortunately $drive is not yet implemented. We are working on it.'
 INVALID_DRIVE_NAME = 'Invalid drive $drive. Try "branch" for drive names or $help.'
 INVALID_ARGS = 'Invalid input argument(s). Try $help.'
+INVALID_CREDENTIALS = 'Invalid credentials.'
 
 
 def get(msg, **kwargs):

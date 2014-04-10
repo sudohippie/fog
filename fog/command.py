@@ -28,6 +28,7 @@ class CommandInvoker(object):
         if command.valid():
             # if in ready state, all commands can be executed
             command.execute()
+        # if invalid, in error state
 
 
 class CommandParser(object):
@@ -144,6 +145,8 @@ class Branch(FogCommand):
 
 class Remote(FogCommand):
 
+    __remote = None
+
     @staticmethod
     def name():
         return 'remote'
@@ -155,15 +158,18 @@ class Remote(FogCommand):
             'remote rm': lambda: RemoteRm(self._args[1:])
         }.get(cmd, lambda: Invalid(self._args))()
 
-    def execute(self, **kwargs):
+    def valid(self):
         cmd = ['invalid']
         if len(self._args) == 0:
             cmd = [self.name()]
         elif len(self._args) == 2:
             cmd = [self.name(), ' ', self._args[0]]
 
-        remote = self.__get_remote(''.join(cmd))
-        remote.execute(**kwargs)
+        self.__remote = self.__get_remote(''.join(cmd))
+        return self.__remote.valid()
+
+    def execute(self, **kwargs):
+        self.__remote.execute(**kwargs)
 
 
 class RemoteList(Remote):
