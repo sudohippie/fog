@@ -22,7 +22,7 @@ class CommandInvoker(object):
 
         # if in new state, can execute only init, help and invalid
         if not ConfUtil.exists_home():
-            if not isinstance(command, Help) and not isinstance(command, Init) and not isinstance(command, Invalid):
+            if not isinstance(command, Help) and not isinstance(command, Init) and not isinstance(command, Unknown):
                 StdOut.display(msg=message.get(message.MISSING_HOME))
                 return
 
@@ -44,8 +44,9 @@ class CommandParser(object):
             Help.name(): lambda: Help(inputs),
             Init.name(): lambda: Init(args),
             Remote.name(): lambda: Remote(args),
-            Pull.name(): lambda: Pull(args)
-        }.get(inputs[0], lambda: Invalid(args))()
+            Pull.name(): lambda: Pull(args),
+            Rm.name(): lambda: Rm(args)
+        }.get(inputs[0], lambda: Unknown(inputs))()
 
     def parse(self, args=['invalid']):
         # clean the args
@@ -157,7 +158,7 @@ class Remote(FogCommand):
             'remote': lambda: RemoteList(self._args),
             'remote add': lambda: RemoteAdd(self._args[1:]),
             'remote rm': lambda: RemoteRm(self._args[1:])
-        }.get(cmd, lambda: Invalid(self._args))()
+        }.get(cmd, lambda: Unknown([cmd]))()
 
     def valid(self):
         cmd = ['invalid']
@@ -258,6 +259,7 @@ class Pull(FogCommand):
 
     def valid(self):
         if len(self._args) != 1 and len(self._args) != 2:
+            StdOut.display(msg=message.get(message.INVALID_ARGS))
             return False
 
         # make sure drive has been checked out
@@ -292,10 +294,43 @@ class Pull(FogCommand):
             drive.close()
 
 
-class Invalid(FogCommand):
+class Rm(FogCommand):
+
+    @staticmethod
+    def name():
+        return 'rm'
+
+    def valid(self):
+        if len(self._args) == 0:
+            StdOut.display(msg=message.get(message.INVALID_ARGS))
+            return False
+
+         # make sure drive has been checked out
+        checkout = ConfUtil.get_checkout()
+        if not checkout:
+            StdOut.display(msg=message.get(message.MISSING_CHECKOUT))
+            return False
+
+        # make sure drive is tracked
+        if not ConfUtil.exists_drive(checkout):
+            StdOut.display(msg=message.get(message.MISSING_REMOTE, drive=checkout))
+            return False
+
+        return True
 
     def execute(self, **kwargs):
-        StdOut.display(msg=message.get(message.INVALID_ARGS))
+        drive = device.get_active_drive()
+        if drive.open():
+            # delete
+            for src in self._args:
+                drive.delete(src=src)
+            drive.close()
+
+
+class Unknown(FogCommand):
+
+    def execute(self, **kwargs):
+        StdOut.display(msg=message.get(message.INVALID_COMMAND, command=self._args[0]))
 
 
 class Help(FogCommand):

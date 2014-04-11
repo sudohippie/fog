@@ -14,6 +14,13 @@ class GoogleDriveTest(object):
         #c = drive.download(src='/sudhi_indiagifts_list')
         drive.close()
 
+    @staticmethod
+    def test_delete():
+        drive = GoogleDrive()
+        drive.open()
+        drive.delete(src='/tmp/HelloWod.txt')
+        drive.close()
+
 
 if __name__ == '__main__':
-    GoogleDriveTest.test_download()
+    GoogleDriveTest.test_delete()
