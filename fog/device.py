@@ -90,11 +90,7 @@ class GoogleDrive(Drive):
             return None
 
         # split file and cleanup
-        titles = []
-        for title in path.split('/'):
-            if title:
-                titles.append(title)
-
+        titles = fsutil.split(path)
         # pick the last element and search for it in google drive
         req = self.__drive.files().list()
         while req:
