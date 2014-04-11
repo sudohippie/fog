@@ -3,6 +3,7 @@ __author__ = 'Raghav Sidhanti'
 import mimetypes
 import message
 import fsutil
+import pprint
 
 from inout import StdIn
 from inout import StdOut
@@ -186,11 +187,6 @@ class GoogleDrive(Drive):
         self.__http = None
 
     def download(self, **kwargs):
-        # preconditions, check drive state
-        if self.__drive is None:
-            # todo log unauthenticated drive
-            return
-
         src = kwargs.get('src', None)
         dst = kwargs.get('dst', None)
 
@@ -200,4 +196,18 @@ class GoogleDrive(Drive):
             self.__write(meta, dst)
         else:
             # file not found
-            StdOut.display(msg=message.get(message.MISSING_FILE, location=GoogleDrive.name()))
+            StdOut.display(msg=message.get(message.MISSING_FILE, location=self.name()))
+
+    def delete(self, **kwargs):
+        src = kwargs.get('src', None)
+
+        # find file
+        meta = self.__find_meta(src)
+        if meta is not None:
+            if StdIn.prompt_yes(message.get(message.PROMPT_TRASH, file=src, drive=self.name())):
+                # delete the file
+                resp = self.__drive.files().trash(fileId=meta.get('id')).execute()
+                if resp:
+                    StdOut.display(message.get(message.TRASH, file=src, drive=self.name()))
+        else:
+            StdOut.display(msg=message.get(message.MISSING_FILE, location=self.name()))

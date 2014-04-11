@@ -6,7 +6,7 @@ from fog.command import Init
 from fog.command import Checkout
 from fog.command import Branch
 from fog.command import Remote
-from fog.command import Invalid
+from fog.command import Unknown
 from fog.command import Help
 from fog.command import CommandParser
 
@@ -46,17 +46,17 @@ class CommandParserTest(unittest.TestCase):
     def test_invalid_bad_cmd(self):
         cmd = self.__parser.parse(['fog', 'blah'])
         self.assertIsNotNone(cmd)
-        self.assertTrue(type(cmd) is Invalid)
+        self.assertTrue(type(cmd) is Unknown)
 
     def test_invalid_no_cmd(self):
         cmd = self.__parser.parse(['fog'])
         self.assertIsNotNone(cmd)
-        self.assertTrue(type(cmd) is Invalid)
+        self.assertTrue(type(cmd) is Unknown)
 
     def test_invalid_none(self):
         cmd = self.__parser.parse(None)
         self.assertIsNotNone(cmd)
-        self.assertTrue(type(cmd) is Invalid)
+        self.assertTrue(type(cmd) is Unknown)
 
     def test_args(self):
         cmd = self.__parser.parse(['fog', 'init', 'src', 'dest'])
