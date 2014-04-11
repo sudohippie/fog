@@ -85,3 +85,13 @@ def join_paths(path=None, file_name=None):
     if not file_name:
         return path
     return os.path.join(path, file_name)
+
+
+def split(path=None):
+    # while path, get tail and append
+    splits = []
+    while path and path != '/':
+        path, tail = os.path.split(path)
+        if tail:
+            splits.insert(0, tail)
+    return splits

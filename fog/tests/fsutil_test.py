@@ -66,6 +66,51 @@ class FsUtilTest(unittest.TestCase):
         self.assertIsNot(path, abspath)
         self.assertTrue('..' not in abspath)
 
+    def test_split0(self):
+        path = 'hell/hel'
+
+        r = fog.fsutil.split(path)
+
+        self.assertIsNotNone(r)
+        self.assertEqual(2, len(r))
+        self.assertEqual('hell', r[0])
+        self.assertEqual('hel', r[1])
+
+    def test_split1(self):
+        path = '/hell/hel'
+
+        r = fog.fsutil.split(path)
+
+        self.assertIsNotNone(r)
+        self.assertEqual(2, len(r))
+        self.assertEqual('hell', r[0])
+        self.assertEqual('hel', r[1])
+
+    def test_split2(self):
+        path = '/'
+
+        r = fog.fsutil.split(path)
+
+        self.assertIsNotNone(r)
+        self.assertEqual(0, len(r))
+
+    def test_split3(self):
+        path = 'hel'
+
+        r = fog.fsutil.split(path)
+
+        self.assertIsNotNone(r)
+        self.assertEqual(1, len(r))
+        self.assertEqual('hel', r[0])
+
+    def test_split3(self):
+        path = None
+
+        r = fog.fsutil.split(path)
+
+        self.assertIsNotNone(r)
+        self.assertEqual(0, len(r))
+
 if __name__ == '__main__':
     unittest.main()
 
