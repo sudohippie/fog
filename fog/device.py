@@ -243,14 +243,15 @@ class GoogleDrive(Drive):
 
         # find file
         meta = self.__find_meta(src)
-        if meta is not None:
-            if StdIn.prompt_yes(message.get(message.PROMPT_TRASH, file=src, drive=self.name())):
-                # delete the file
-                resp = self.__drive.files().trash(fileId=meta.get('id')).execute()
-                if resp:
-                    StdOut.display(message.get(message.TRASH, file=src, drive=self.name()))
-        else:
+        if meta is None:
             StdOut.display(msg=message.get(message.MISSING_FILE, location=self.name()))
+            return
+
+        if StdIn.prompt_yes(message.get(message.PROMPT_TRASH, file=src, drive=self.name())):
+            # delete the file
+            resp = self.__drive.files().trash(fileId=meta.get('id')).execute()
+            if resp:
+                StdOut.display(message.get(message.TRASH, file=src, drive=self.name()))
 
     def upload(self, **kwargs):
         src = kwargs.get('src', None)
