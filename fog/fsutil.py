@@ -95,3 +95,14 @@ def split(path=None):
         if tail:
             splits.insert(0, tail)
     return splits
+
+
+def is_folder(path=None):
+    if exists(path):
+        return os.path.isdir(path)
+    return False
+
+
+def list_folder(path=None):
+    if exists(path):
+        return os.listdir(path)

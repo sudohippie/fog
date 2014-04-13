@@ -3,7 +3,6 @@ __author__ = 'Raghav Sidhanti'
 import mimetypes
 import message
 import fsutil
-import pprint
 
 from inout import StdIn
 from inout import StdOut
@@ -11,6 +10,7 @@ from configuration import Conf
 from configuration import ConfUtil
 
 from apiclient.discovery import build
+from apiclient.http import  MediaFileUpload
 from httplib2 import Http
 from oauth2client.file import Storage
 from oauth2client.tools import run
@@ -162,6 +162,45 @@ class GoogleDrive(Drive):
             return None
         return content
 
+    def __insert(self, path, meta):
+        if not path or not meta:
+            return
+
+        file_name = fsutil.filename(path)
+        if not fsutil.is_folder(path):
+            # get children
+            children = self.__drive.children().list(folderId=meta.get('id')).execute()
+            media = MediaFileUpload(path, resumable=True)
+            for child in children.get('items'):
+                child_meta = self.__drive.files().get(fileId=child.get('id')).execute()
+                title = child_meta.get('title')
+                if title == file_name:
+                    # prompt and update
+                    if StdIn.prompt_yes(msg=message.get(message.PROMPT_OVERWRITE, file=title)):
+                        self.__drive.files().update(fileId=child_meta.get(id), media_body=media).execute()
+                        return
+            body = {
+                'title': file_name
+            }
+            self.__drive.children().insert(folderId=meta.get('id'), media_body=media, body=body)
+        else:
+            children = self.__drive.children().list(folderId=meta.get('id')).execute()
+            for child in children.get('items'):
+                child_meta = self.__drive.files().get(fileId=child.get('id')).execute()
+                title = child_meta.get('title')
+                if title == file_name:
+                    for folder_file in fsutil.list_folder(path):
+                        self.__insert(folder_file, child_meta)
+                    return
+            # create a folder
+            body = {
+                'title': file_name,
+                'mimeType': self.__FOLDER_MIME
+            }
+            folder_meta = self.__drive.children().insert(folderId=meta.get('id'), body=body).execute()
+            for folder_file in fsutil.list_folder(path):
+                self.__insert(folder_file, folder_meta)
+
     @staticmethod
     def name():
         return Conf.GOOGLE
@@ -207,3 +246,21 @@ class GoogleDrive(Drive):
                     StdOut.display(message.get(message.TRASH, file=src, drive=self.name()))
         else:
             StdOut.display(msg=message.get(message.MISSING_FILE, location=self.name()))
+
+    def upload(self, **kwargs):
+        src = kwargs.get('src', None)
+        dst = kwargs.get('dst', None)
+
+        # destination must be a folder
+        # get meta data
+        meta = self.__find_meta(dst)
+        # if not folder, print error and return
+        if not fsutil.exists(src):
+            # todo print missing folder
+            return
+
+        if meta.get('mimeType') != self.__FOLDER_MIME:
+            # todo print folder exception
+            return
+
+        self.__insert(src, meta)
