@@ -111,7 +111,13 @@ class FsUtilTest(unittest.TestCase):
         self.assertIsNotNone(r)
         self.assertEqual(0, len(r))
 
+    def test_list_folder(self):
+        path = '~'
+
+        r = fog.fsutil.list_folder(path)
+        self.assertIsNotNone(r)
+        self.assertTrue(len(r) > 1)
+
 if __name__ == '__main__':
     unittest.main()
-
 
