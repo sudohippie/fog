@@ -166,40 +166,45 @@ class GoogleDrive(Drive):
         if not path or not meta:
             return
 
-        file_name = fsutil.filename(path)
-        if not fsutil.is_folder(path):
-            # get children
-            children = self.__drive.children().list(folderId=meta.get('id')).execute()
-            media = MediaFileUpload(path, resumable=True)
-            for child in children.get('items'):
-                child_meta = self.__drive.files().get(fileId=child.get('id')).execute()
-                title = child_meta.get('title')
-                if title == file_name:
-                    # prompt and update
-                    if StdIn.prompt_yes(msg=message.get(message.PROMPT_OVERWRITE, file=title)):
-                        self.__drive.files().update(fileId=child_meta.get(id), media_body=media).execute()
-                        return
-            body = {
-                'title': file_name
-            }
-            self.__drive.children().insert(folderId=meta.get('id'), media_body=media, body=body)
+        if fsutil.is_folder(path):
+            self.__insert_folder(path, meta)
         else:
-            children = self.__drive.children().list(folderId=meta.get('id')).execute()
-            for child in children.get('items'):
-                child_meta = self.__drive.files().get(fileId=child.get('id')).execute()
-                title = child_meta.get('title')
-                if title == file_name:
-                    for folder_file in fsutil.list_folder(path):
-                        self.__insert(folder_file, child_meta)
+            self.__insert_file(path, meta)
+
+    def __insert_file(self, src=None, meta=None):
+        file_name = fsutil.filename(src)
+        media = MediaFileUpload(src, resumable=True)
+        children = self.__drive.children().list(folderId=meta.get('id')).execute()
+        for child in children:
+            child_meta = self.__drive.files().get(fileId=child.get('id')).execute()
+            if child_meta.get('title') == file_name:
+                if StdIn.prompt_yes(msg=message.get(message.PROMPT_OVERWRITE, file=file_name)):
+                    self.__drive.files().update(fileId=child_meta.get(id), media_body=media).execute()
                     return
-            # create a folder
+        body = {
+            'title': file_name
+        }
+        self.__drive.children().insert(folderId=meta.get('id'), media_body=media, body=body)
+
+    def __insert_folder(self, src=None, meta=None):
+        folder_name = fsutil.filename(src)
+        children = self.__drive.children().list(folderId=meta.get('id')).execute()
+        folder_meta = None
+        for child in children:
+            child_meta = self.__drive.files().get(fileId=child.get('id')).execute()
+            if child_meta.get('title') == folder_name and child_meta.get('mimeType') == self.__FOLDER_MIME:
+                folder_meta = child_meta
+                break
+
+        if folder_meta is None:
             body = {
-                'title': file_name,
+                'title': folder_name,
                 'mimeType': self.__FOLDER_MIME
             }
             folder_meta = self.__drive.children().insert(folderId=meta.get('id'), body=body).execute()
-            for folder_file in fsutil.list_folder(path):
-                self.__insert(folder_file, folder_meta)
+
+        for path in fsutil.list_folder(src):
+            self.__insert(path, folder_meta)
 
     @staticmethod
     def name():
@@ -251,16 +256,21 @@ class GoogleDrive(Drive):
         src = kwargs.get('src', None)
         dst = kwargs.get('dst', None)
 
-        # destination must be a folder
-        # get meta data
-        meta = self.__find_meta(dst)
         # if not folder, print error and return
         if not fsutil.exists(src):
-            # todo print missing folder
+            StdOut.display(msg=message.get(message.MISSING_FILE, location='local'))
+            return
+
+        # get meta data
+        meta = self.__find_meta(dst)
+
+        # if remote does not exist, print and return
+        if meta is None:
+            StdOut.display(msg=message.get(message.MISSING_FILE, location=self.name()))
             return
 
         if meta.get('mimeType') != self.__FOLDER_MIME:
-            # todo print folder exception
+            StdOut.display(msg=message.get(message.INVALID_FOLDER, location=self.name()))
             return
 
         self.__insert(src, meta)
