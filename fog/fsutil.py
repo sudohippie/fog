@@ -104,10 +104,10 @@ def is_folder(path=None):
 
 
 def list_folder(path=None):
-    # todo test whether absolute paths are created
     if exists(path):
         file_names = os.listdir(abs_path(path))
         files = []
         for file_name in file_names:
             files.append(join_paths(abs_path(path), file_name))
         return files
+    return []
