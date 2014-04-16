@@ -45,7 +45,8 @@ class CommandParser(object):
             Init.name(): lambda: Init(args),
             Remote.name(): lambda: Remote(args),
             Pull.name(): lambda: Pull(args),
-            Rm.name(): lambda: Rm(args)
+            Rm.name(): lambda: Rm(args),
+            Push.name(): lambda: Push(args)
         }.get(inputs[0], lambda: Unknown(inputs))()
 
     def parse(self, args=['invalid']):
@@ -284,6 +285,47 @@ class Pull(FogCommand):
             dst = fsutil.join_paths(self._args[1], file_name)
         else:
             dst = fsutil.join_paths(src, file_name)
+
+        drive = device.get_active_drive()
+        # open connection
+        if drive.open():
+            # pull
+            drive.download(src=src, dst=dst)
+            #close
+            drive.close()
+
+
+class Push(FogCommand):
+
+    @staticmethod
+    def name():
+        return 'push'
+
+    def valid(self):
+        if len(self._args) != 1 and len(self._args) != 2:
+            StdOut.display(msg=message.get(message.INVALID_ARGS))
+            return False
+
+        # make sure drive has been checked out
+        checkout = ConfUtil.get_checkout()
+        if not checkout:
+            StdOut.display(msg=message.get(message.MISSING_CHECKOUT))
+            return False
+
+        # make sure drive is tracked
+        if not ConfUtil.exists_drive(checkout):
+            StdOut.display(msg=message.get(message.MISSING_REMOTE, drive=checkout))
+            return False
+
+        return True
+
+    def execute(self, **kwargs):
+        # validate inputs
+        src = self._args[0]
+        dst = self._args[0]
+
+        if len(self._args) == 2:
+            dst = self._args[1]
 
         drive = device.get_active_drive()
         # open connection
