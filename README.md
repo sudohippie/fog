@@ -1,5 +1,5 @@
 # Fog
-Fog is an open source cross-platform Git styled tool to upload, download and remove files from remote cloud drives.
+Fog is an open-source cross-platform Git styled tool to upload, download and remove files from remote cloud drives.
 It is written in Python.
 
 ## Requirements & Dependencies
