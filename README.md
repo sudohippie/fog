@@ -15,7 +15,7 @@ $ cd fog
 ```
 
 ## Usage
-The tool's commands are very similar to git. The help command provides information on all available commands.
+Commands are very similar to git. The help command provides information on all available commands.
 
 ```
 $ python fog/fog.py help
