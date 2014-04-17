@@ -4,7 +4,7 @@ python.
 
 ## Requirements & Dependencies
 * ``python >= 2.6`` (tested with version 2.7)
-* ``google-api-python-client`` (install from [here](https://code.google.com/p/google-api-python-client/))
+* ``google-api-python-client`` (install from [here](https://developers.google.com/api-client-library/python/start/installation))
 
 ## Installation
 To install simply clone this git repository.
