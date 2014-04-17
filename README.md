@@ -13,7 +13,7 @@ Currently supported drives are:
 ## Installation
 To install simply clone this git repository.
 
-```git
+```
 $ git clone https://github.com/sudohippie/fog
 $ cd fog
 ```
@@ -21,7 +21,7 @@ $ cd fog
 ## Usage
 The tool's commands are very similar to git. The help command provides information on all available commands.
 
-```python
+```
 $ python fog/fog.py help
 ```
 
