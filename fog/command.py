@@ -331,7 +331,7 @@ class Push(FogCommand):
         # open connection
         if drive.open():
             # pull
-            drive.download(src=src, dst=dst)
+            drive.upload(src=src, dst=dst)
             #close
             drive.close()
 

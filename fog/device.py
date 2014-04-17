@@ -175,11 +175,11 @@ class GoogleDrive(Drive):
         file_name = fsutil.filename(src)
         media = MediaFileUpload(src, resumable=True)
         children = self.__drive.children().list(folderId=meta.get('id')).execute()
-        for child in children:
+        for child in children.get('items'):
             child_meta = self.__drive.files().get(fileId=child.get('id')).execute()
             if child_meta.get('title') == file_name:
                 if StdIn.prompt_yes(msg=message.get(message.PROMPT_OVERWRITE, file=file_name)):
-                    self.__drive.files().update(fileId=child_meta.get(id), media_body=media).execute()
+                    self.__drive.files().update(fileId=child_meta.get('id'), media_body=media).execute()
                     return
         body = {
             'title': file_name
