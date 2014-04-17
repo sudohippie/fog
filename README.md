@@ -2,10 +2,6 @@
 fog is a cross-platform git styled tool to upload, download and remove files from remote cloud drives. It is written in
 python.
 
-Currently supported drives are:
-
-* Google Drive
-
 ## Requirements & Dependencies
 * ``python >= 2.6`` (tested with version 2.7)
 * ``google-api-python-client`` (install from [here](https://code.google.com/p/google-api-python-client/))
