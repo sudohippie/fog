@@ -22,7 +22,7 @@ $ python fog/fog.py help
 ```
 
 ## Documentation
-Documentation is available on the [Fog Wiki](https://github.com/sudohippie/fog/wiki).
+Documentation is available on the [Wiki](https://github.com/sudohippie/fog/wiki).
 
 ## Author
 Raghav Sidhanti
