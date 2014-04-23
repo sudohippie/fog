@@ -11,7 +11,10 @@ config = {
     'url': 'https://github.com/sudohippie/fog',
     'download_url': 'https://github.com/sudohippie/fog',
     'version': '1.0.0-beta.1',
-    'install_requires': ['nose', 'google-api-python-client'],
+    'install_requires': ['nose',
+                         'google-api-python-client',
+                         'distribute',
+                         'virtualenv'],
     'packages': ['fog'],
     'scripts': [],
     'license': 'The MIT License'
