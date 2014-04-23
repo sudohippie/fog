@@ -9,15 +9,6 @@ from shutil import rmtree
 from inout import StdIn
 
 
-def abs_path(path=None):
-    if path is None:
-        return None
-
-    exp_home = os.path.expanduser(path)
-    real_path = os.path.abspath(exp_home)
-    return os.path.abspath(real_path)
-
-
 def exists(path=None):
     if path is None:
         return False
@@ -77,6 +68,15 @@ def filename(path=None):
     return tail or os.path.basename(head)
 
 
+def abs_path(path=None):
+    if not path:
+        return None
+
+    exp_home = os.path.expanduser(path)
+    real_path = os.path.abspath(exp_home)
+    return os.path.abspath(real_path)
+
+
 def join_paths(path=None, file_name=None):
     if not path and not file_name:
         return None
@@ -90,7 +90,7 @@ def join_paths(path=None, file_name=None):
 def split(path=None):
     # while path, get tail and append
     splits = []
-    while path and path != '/':
+    while path and path.strip('/'):
         path, tail = os.path.split(path)
         if tail:
             splits.insert(0, tail)
