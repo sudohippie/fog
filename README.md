@@ -16,6 +16,8 @@ Need a few [pip](http://www.pip-installer.org/en/latest/reference/pip.html) inst
 
 * ``google-api-python-client`` ([details](https://developers.google.com/api-client-library/python/start/installation))
 
+See [requirements](requirements.txt) document for exact versions.
+
 ## Installation
 To install simply clone this repository.
 
