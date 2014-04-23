@@ -28,4 +28,4 @@ Documentation is available on the [Wiki](https://github.com/sudohippie/fog/wiki)
 Raghav Sidhanti
 
 ## License
-[The MIT License](LICENSE).
+The MIT License. See [LICENSE](LICENSE) for details.
