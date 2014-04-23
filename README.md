@@ -9,9 +9,9 @@ Commands are very similar to git. The ``help`` command provides information on a
 $ python fog/fog.py help
 ```
 
-## Requirements & Dependencies
-* ``python >= 2.7`` (tested with version 2.7)
-* ``google-api-python-client`` (install from [here](https://developers.google.com/api-client-library/python/start/installation))
+## Prerequisites
+See [requirements](requirements.txt) for details.
+Use [pip](http://www.pip-installer.org/en/latest/user_guide.html#requirements-files) for installation.
 
 ## Installation
 To install simply clone this repository.
