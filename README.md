@@ -10,8 +10,11 @@ $ python fog/fog.py help
 ```
 
 ## Prerequisites
-See [requirements](requirements.txt) for details.
-Use [pip](http://www.pip-installer.org/en/latest/user_guide.html#requirements-files) for installation.
+* ``python >= 2.7`` (tested with version 2.7)
+
+Need a few [pip](http://www.pip-installer.org/en/latest/reference/pip.html) installations,
+
+* ``google-api-python-client`` (install from [here](https://developers.google.com/api-client-library/python/start/installation))
 
 ## Installation
 To install simply clone this repository.
