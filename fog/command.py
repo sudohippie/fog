@@ -35,28 +35,33 @@ class CommandInvoker(object):
 class CommandParser(object):
 
     @staticmethod
-    def __get_command(inputs):
+    def get_command(inputs):
+        if inputs is None or len(inputs) == 0:
+            return Unknown()
+
+        name = inputs[0].lower()
         args = inputs[1:]
         # create instance for drive and return
         return {
             Branch.name(): lambda: Branch(args),
             Checkout.name(): lambda: Checkout(args),
-            Help.name(): lambda: Help(inputs),
+            Help.name(): lambda: Help(args),
             Init.name(): lambda: Init(args),
             Remote.name(): lambda: Remote(args),
             Pull.name(): lambda: Pull(args),
             Rm.name(): lambda: Rm(args),
             Push.name(): lambda: Push(args)
-        }.get(inputs[0], lambda: Unknown(inputs))()
+        }.get(name, lambda: Unknown(inputs))()
 
-    def parse(self, args=['invalid']):
+    def parse(self, args):
         # clean the args
         inputs = []
-        for arg in args:
-            if arg:
-                inputs.append(arg.strip())
+        if args is not None:
+            for arg in args:
+                if arg:
+                    inputs.append(arg.strip())
         # get command object
-        return self.__get_command(inputs)
+        return self.get_command(inputs)
 
 
 class FogCommand(object):
@@ -86,18 +91,21 @@ class Init(FogCommand):
         return 'init'
 
     def valid(self):
-        if ConfUtil.exists_home():
-            if StdIn.prompt_yes(message.get(message.PROMPT_CONTINUE, info=message.HOME_EXISTS)):
-                return True
-            else:
-                return False
-
+        if len(self._args) != 0:
+            StdOut.display(msg=message.get(message.INVALID_ARGS))
+            return False
         return True
 
     def execute(self, **kwargs):
+        proceed = True
+        if ConfUtil.exists_home():
+            if not StdIn.prompt_yes(message.get(message.PROMPT_CONTINUE, info=message.HOME_EXISTS)):
+                proceed = False
+
         # create home and files
-        ConfUtil.remove_home()
-        ConfUtil.create_home()
+        if proceed:
+            ConfUtil.remove_home()
+            ConfUtil.create_home()
 
 
 class Checkout(FogCommand):
@@ -132,6 +140,9 @@ class Branch(FogCommand):
         return 'branch'
 
     def valid(self):
+        if len(self._args) != 0:
+            StdOut.display(msg=message.get(message.INVALID_ARGS))
+            return False
         return True
 
     def execute(self, **kwargs):
@@ -379,6 +390,18 @@ class Help(FogCommand):
     @staticmethod
     def name():
         return 'help'
+
+    def valid(self):
+        if len(self._args) == 0:
+            return True
+        elif len(self._args) == 1:
+            parser = CommandParser()
+            cmd = parser.parse(self._args)
+            if type(cmd) is not Unknown:
+                return True
+
+        StdOut.display(msg=message.get(message.INVALID_ARGS))
+        return False
 
     def execute(self, **kwargs):
         msgs = [
