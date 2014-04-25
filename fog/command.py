@@ -166,7 +166,7 @@ class RemoteFactory(FogCommand):
             values.append(' ')
             values.append(self._args[0])
 
-        name = ''.join(values)
+        name = ''.join(values).lower()
         args = []
         if len(self._args) > 1:
             args = self._args[1:]
