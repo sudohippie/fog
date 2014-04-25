@@ -47,7 +47,7 @@ class CommandParser(object):
             Checkout.name(): lambda: Checkout(args),
             Help.name(): lambda: Help(args),
             Init.name(): lambda: Init(args),
-            Remote.name(): lambda: Remote(args),
+            RemoteFactory.name(): lambda: RemoteFactory(args).execute(),
             Pull.name(): lambda: Pull(args),
             Rm.name(): lambda: Rm(args),
             Push.name(): lambda: Push(args)
@@ -157,36 +157,36 @@ class Branch(FogCommand):
             StdOut.display(msg=message.get(message.STATUS, mark=mark, drive=name))
 
 
-class Remote(FogCommand):
-
-    __remote = None
+class RemoteFactory(FogCommand):
 
     @staticmethod
     def name():
         return 'remote'
 
-    def __get_remote(self, cmd):
-        return {
-            'remote': lambda: RemoteList(self._args),
-            'remote add': lambda: RemoteAdd(self._args[1:]),
-            'remote rm': lambda: RemoteRm(self._args[1:])
-        }.get(cmd, lambda: Unknown([cmd]))()
-
-    def valid(self):
-        cmd = ['invalid']
-        if len(self._args) == 0:
-            cmd = [self.name()]
-        elif len(self._args) == 2:
-            cmd = [self.name(), ' ', self._args[0]]
-
-        self.__remote = self.__get_remote(''.join(cmd))
-        return self.__remote.valid()
-
     def execute(self, **kwargs):
-        self.__remote.execute(**kwargs)
+
+        values = [self.name()]
+        if len(self._args) > 0:
+            values.append(' ')
+            values.append(self._args[0])
+
+        name = ''.join(values)
+        args = []
+        if len(self._args) > 1:
+            args = self._args[1:]
+
+        return {
+            'remote': lambda: Remote(args),
+            'remote add': lambda: RemoteAdd(args),
+            'remote rm': lambda: RemoteRm(args)
+        }.get(name, lambda: Unknown([name]))()
 
 
-class RemoteList(Remote):
+class Remote(RemoteFactory):
+
+    @staticmethod
+    def name():
+        return 'remote'
 
     def valid(self):
         return True
@@ -200,7 +200,11 @@ class RemoteList(Remote):
             StdOut.display(msg=message.get(message.STATUS, mark=mark, drive=name))
 
 
-class RemoteAdd(FogCommand):
+class RemoteAdd(RemoteFactory):
+
+    @staticmethod
+    def name():
+        return 'remote add'
 
     def valid(self):
         # check argument size
@@ -237,7 +241,11 @@ class RemoteAdd(FogCommand):
             StdOut.display(msg=message.get(message.MISSING_IMPLEMENTATION, drive=drive_name))
 
 
-class RemoteRm(FogCommand):
+class RemoteRm(RemoteFactory):
+
+    @staticmethod
+    def name():
+        return 'remote rm'
 
     def valid(self):
         # check argument size
