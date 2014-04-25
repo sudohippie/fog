@@ -47,7 +47,7 @@ class CommandParser(object):
             Checkout.name(): lambda: Checkout(args),
             Help.name(): lambda: Help(args),
             Init.name(): lambda: Init(args),
-            RemoteFactory.name(): lambda: RemoteFactory(args).execute(),
+            Remote.name(): lambda: RemoteFactory(args).execute(),
             Pull.name(): lambda: Pull(args),
             Rm.name(): lambda: Rm(args),
             Push.name(): lambda: Push(args)
@@ -159,13 +159,9 @@ class Branch(FogCommand):
 
 class RemoteFactory(FogCommand):
 
-    @staticmethod
-    def name():
-        return 'remote'
-
     def execute(self, **kwargs):
 
-        values = [self.name()]
+        values = [Remote.name()]
         if len(self._args) > 0:
             values.append(' ')
             values.append(self._args[0])
