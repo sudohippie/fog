@@ -1,4 +1,4 @@
-# Fog [![Build Status](https://travis-ci.org/sudohippie/fog.png)](https://travis-ci.org/sudohippie/fog)
+# Fog [![Build Status](https://travis-ci.org/sudohippie/fog.svg?branch=master)](https://travis-ci.org/sudohippie/fog)
 Fog is an open-source cross-platform Git styled tool to upload, download and remove files from remote cloud drives.
 It is written in Python.
 
