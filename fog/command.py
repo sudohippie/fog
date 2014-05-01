@@ -50,7 +50,8 @@ class CommandParser(object):
             Remote.name(): lambda: RemoteFactory(args).execute(),
             Pull.name(): lambda: Pull(args),
             Rm.name(): lambda: Rm(args),
-            Push.name(): lambda: Push(args)
+            Push.name(): lambda: Push(args),
+            Info.name(): lambda: Info(args)
         }.get(name, lambda: Unknown(inputs))()
 
     def parse(self, args):
@@ -381,6 +382,39 @@ class Rm(FogCommand):
             # delete
             for src in self._args:
                 drive.delete(src=src)
+            drive.close()
+
+
+class Info(FogCommand):
+
+    @staticmethod
+    def name():
+        return 'info'
+
+    def valid(self):
+        # only one argument allowed
+        if len(self._args) == 0:
+            StdOut.display(msg=message.get(message.INVALID_ARGS))
+            return False
+
+         # make sure drive has been checked out
+        checkout = ConfUtil.get_checkout()
+        if not checkout:
+            StdOut.display(msg=message.get(message.MISSING_CHECKOUT))
+            return False
+
+        # make sure drive is tracked
+        if not ConfUtil.exists_drive(checkout):
+            StdOut.display(msg=message.get(message.MISSING_REMOTE, drive=checkout))
+            return False
+
+        return True
+
+    def execute(self, **kwargs):
+        drive = device.get_active_drive()
+        if drive.open():
+            for src in self._args:
+                drive.info(src=src)
             drive.close()
 
 

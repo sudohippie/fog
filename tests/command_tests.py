@@ -303,6 +303,36 @@ class TestCommandParser(object):
         ok_(type(cmd) is Rm)
         #ok_(not cmd.valid()) look at issue-#29
 
+    # info, similar to rm
+    # info, no arguments
+    def test_info_with_no_args(self):
+        args_list = [['info'], ['INFO'], ['Info'], ['  info  ']]
+        for args in args_list:
+            cmd = self._psr.parse(args)
+            ok_(type(cmd) is Info)
+            ok_(not cmd.valid())
+
+    # info, single arguments
+    def test_info_with_one_args(self):
+        args = ['info', 'file/folder/mousetrap.txt']
+        cmd = self._psr.parse(args)
+        ok_(type(cmd) is Info)
+        #ok_(cmd.valid()) look at issue-#29
+
+    # info, two arguments
+    def test_info_with_two_args(self):
+        args = ['info', 'file/folder/mousetrap.txt', 'folder/file/moustrap2.txt']
+        cmd = self._psr.parse(args)
+        ok_(type(cmd) is Info)
+        #ok_(cmd.valid()) look at issue-#29
+
+    # info, more than two arguments
+    def test_info_with_multi_args(self):
+        args = ['info', 'file/folder/mousetrap.txt', 'folder/file/moustrap2.txt', 'file/folder/mousetrap3.txt', 'folder/file/moustrap4.txt']
+        cmd = self._psr.parse(args)
+        ok_(type(cmd) is Info)
+        #ok_(not cmd.valid()) look at issue-#29
+
 
 if __name__ == '__main__':
     test = TestCommandParser()

@@ -1,8 +1,8 @@
 __author__ = 'Raghav Sidhanti'
 
-import mimetypes
 import message
 import fsutil
+import pprint
 
 from inout import StdIn
 from inout import StdOut
@@ -52,6 +52,12 @@ class Drive(object):
         pass
 
     def delete(self, **kwargs):
+        pass
+
+    def info(self, **kwargs):
+        pass
+
+    def list(self, **kwargs):
         pass
 
 
@@ -275,3 +281,25 @@ class GoogleDrive(Drive):
             return
 
         self.__insert(src, meta)
+
+    def info(self, **kwargs):
+        # preconditions
+        src = kwargs.get('src', None)
+
+        # get meta information
+        meta = self.__find_meta(src)
+
+        # print data
+        if meta is not None:
+
+            # pprint version for utf8 conversions. Will remote the u prefixes.
+            class Utf8PrettyPrinter(pprint.PrettyPrinter):
+
+                def format(self, object, context, maxlevels, level):
+                    if isinstance(object, unicode):
+                        return object.encode('utf8'), True, False
+                    return pprint.PrettyPrinter.format(self, object, context, maxlevels, level)
+
+            Utf8PrettyPrinter().pprint(meta)
+        else:
+            StdOut.display(msg=message.get(message.MISSING_FILE, location=self.name()))
