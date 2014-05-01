@@ -151,7 +151,8 @@ class GoogleDrive(Drive):
         content = self.__get_content(url)
         if content is None:
             StdOut.display(msg=message.get(message.ERROR_DOWNLOAD, file=meta.get('title'), drive=self.name()))
-        fsutil.write(dst, content, True)
+        else:
+            fsutil.write(dst, content, True)
 
     def __write_folder(self, meta, dst):
         # create folder if it does not exist

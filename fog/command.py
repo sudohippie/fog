@@ -275,7 +275,7 @@ class Pull(FogCommand):
         return 'pull'
 
     def valid(self):
-        if len(self._args) != 1 and len(self._args) != 2:
+        if len(self._args) != 2:
             StdOut.display(msg=message.get(message.INVALID_ARGS))
             return False
 
