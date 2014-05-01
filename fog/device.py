@@ -97,30 +97,39 @@ class GoogleDrive(Drive):
 
         # split file and cleanup
         titles = fsutil.split(path)
-        # pick the last element and search for it in google drive
-        req = self.__drive.files().list()
+        titles.insert(0, 'My Drive')
+        size = len(titles) - 1
+
+        # if titles, create title query string
+        params = {}
+        if len(titles) > 0:
+            query = ['title', ' = \'', titles[len(titles) - 1], '\'']
+            params['q'] = ''.join(query)
+        else:
+            params['q'] = "'root' in parents"
+            size = 1
+
+        req = self.__drive.files().list(**params)
         while req:
             resp = req.execute()
             metas = resp.get('items')
-            for meta in metas:
-                index = len(titles) - 1
-                # if found,
-                if meta.get('title') == titles[index]:
-                    # retrieve its ancestors and compare against titles
-                    parent = meta.get('parents')[0]
-                    while True:
-                        # if is root and reached end, return
-                        if parent.get('isRoot') and index == 0:
-                            return meta
 
-                        # if not reached end and equal titles, continue
-                        if not parent.get('isRoot') and index > 0:
-                            index -= 1
-                            anc = self.__drive.files().get(fileId=parent.get('id')).execute()
-                            if anc.get('title') == titles[index]:
-                                parent = anc.get('parents')[0]
-                                continue
-                        break
+            for meta in metas:
+                parents = meta.get('parents')
+                index = size
+                while True:
+                    if len(parents) == 0 and index == 0:
+                        if size == 1:
+                            return anc
+                        else:
+                            return meta
+                    elif len(parents) > 0 and index > 0:
+                        index -= 1
+                        anc = self.__drive.files().get(fileId=parents[0].get('id')).execute()
+                        if anc.get('title') == titles[index]:
+                            parents = anc.get('parents')
+                            continue
+                    break
             # paginate
             req = self.__drive.files().list_next(req, resp)
         return None
