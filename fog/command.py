@@ -453,7 +453,8 @@ class Help(FogCommand):
             'remote         List all the drives being tracked',
             'remote add     Track a remote drive',
             'remote rm      Un-track a remote drive',
-            'rm             Move a file on remote drive to trash'
+            'rm             Move a file on remote drive to trash',
+            'info           Display remote file meta information'
         ]
 
         for idx in range(0, 2, 1):
