@@ -30,8 +30,9 @@ INVALID_DRIVE_NAME = 'Invalid drive $drive. Try "branch" for drive names or $hel
 INVALID_ARGS = 'Invalid input argument(s). Try $help.'
 INVALID_COMMAND = 'Unknown command "$command". Try $help.'
 INVALID_CREDENTIALS = 'Invalid credentials.'
-INVALID_FOLDER = 'File may not be folder on $location.'
+INVALID_DST = 'Destination $file must be a folder on $location.'
 ERROR_UNSUPPORTED_DOWNLOAD = 'Download failed for $file from $drive. MimeType not supported.'
+ERROR_REMOTE_OPERATION = 'Error executing remote operation on $drive. Message: $error'
 
 
 def get(msg, **kwargs):

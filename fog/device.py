@@ -10,7 +10,8 @@ from configuration import Conf
 from configuration import ConfUtil
 
 from apiclient.discovery import build
-from apiclient.http import  MediaFileUpload
+from apiclient.errors import HttpError
+from apiclient.http import MediaFileUpload
 from httplib2 import Http
 from oauth2client.file import Storage
 from oauth2client.tools import run
@@ -99,39 +100,50 @@ class GoogleDrive(Drive):
         titles = fsutil.split(path)
         titles.insert(0, 'My Drive')
         size = len(titles) - 1
+        root = False
 
-        # if titles, create title query string
+        # build query
+        query = []
         params = {}
-        if len(titles) > 0:
+        if len(titles) > 1:
             query = ['title', ' = \'', titles[len(titles) - 1], '\'']
-            params['q'] = ''.join(query)
         else:
-            params['q'] = "'root' in parents"
+            query = ["'root' in parents"]
+            params['maxResults'] = 1
+            root = True
             size = 1
+        query.append(' and trashed = False')
+        params['q'] = ''.join(query)
 
         req = self.__drive.files().list(**params)
-        while req:
-            resp = req.execute()
-            metas = resp.get('items')
+        try:
+            while req:
+                resp = req.execute()
+                metas = resp.get('items')
 
-            for meta in metas:
-                parents = meta.get('parents')
-                index = size
-                while True:
-                    if len(parents) == 0 and index == 0:
-                        if size == 1:
-                            return anc
-                        else:
-                            return meta
-                    elif len(parents) > 0 and index > 0:
-                        index -= 1
-                        anc = self.__drive.files().get(fileId=parents[0].get('id')).execute()
-                        if anc.get('title') == titles[index]:
-                            parents = anc.get('parents')
-                            continue
-                    break
-            # paginate
-            req = self.__drive.files().list_next(req, resp)
+                for meta in metas:
+                    parents = meta.get('parents')
+                    index = size
+                    while True:
+                        if len(parents) == 0 and index == 0:
+                            if root:
+                                return anc
+                            else:
+                                return meta
+                        elif len(parents) > 0 and index > 0:
+                            index -= 1
+                            anc = self.__drive.files().get(fileId=parents[0].get('id')).execute()
+                            if anc.get('title') == titles[index]:
+                                parents = anc.get('parents')
+                                continue
+                        break
+                        # paginate
+                req = self.__drive.files().list_next(req, resp)
+        except HttpError, error:
+            StdOut.display(
+                msg=message.get(message.ERROR_REMOTE_OPERATION, drive=self.name(), error=error)
+            )
+
         return None
 
     def __write(self, meta, dst):
@@ -150,7 +162,8 @@ class GoogleDrive(Drive):
         # todo google document types not supported at this time
         content = self.__get_content(url)
         if content is None:
-            StdOut.display(msg=message.get(message.ERROR_UNSUPPORTED_DOWNLOAD, file=meta.get('title'), drive=self.name()))
+            StdOut.display(
+                msg=message.get(message.ERROR_UNSUPPORTED_DOWNLOAD, file=meta.get('title'), drive=self.name()))
         else:
             fsutil.write(dst, content, True)
 
@@ -158,16 +171,21 @@ class GoogleDrive(Drive):
         # create folder if it does not exist
         fsutil.create_dir(dst)
         # list all its children,
-        children = self.__drive.children().list(folderId=meta.get('id')).execute()
-        for child in children.get('items'):
-            child_meta = self.__drive.files().get(fileId=child.get('id')).execute()
-            child_dst = fsutil.join_paths(dst, child_meta.get('title'))
-            # if child is folder, recurs
-            if child_meta.get('mimeType') == self.__FOLDER_MIME:
-                self.__write_folder(child_meta, child_dst)
-            # if child is file, write it to folder
-            else:
-                self.__write_file(child_meta, child_dst)
+        try:
+            children = self.__drive.children().list(folderId=meta.get('id')).execute()
+            for child in children.get('items'):
+                child_meta = self.__drive.files().get(fileId=child.get('id')).execute()
+                child_dst = fsutil.join_paths(dst, child_meta.get('title'))
+                # if child is folder, recurs
+                if child_meta.get('mimeType') == self.__FOLDER_MIME:
+                    self.__write_folder(child_meta, child_dst)
+                # if child is file, write it to folder
+                else:
+                    self.__write_file(child_meta, child_dst)
+        except HttpError, error:
+            StdOut.display(
+                msg=message.get(message.ERROR_REMOTE_OPERATION, drive=self.name(), error=error)
+            )
 
     def __get_content(self, url):
         if not url:
@@ -187,40 +205,61 @@ class GoogleDrive(Drive):
         else:
             self.__insert_file(path, meta)
 
-    def __insert_file(self, src=None, meta=None):
+    def __insert_file(self, src=None, parent_meta=None):
         file_name = fsutil.filename(src)
-        media = MediaFileUpload(src, resumable=True)
-        children = self.__drive.children().list(folderId=meta.get('id')).execute()
-        for child in children.get('items'):
-            child_meta = self.__drive.files().get(fileId=child.get('id')).execute()
-            if child_meta.get('title') == file_name:
+        media_body = MediaFileUpload(src, resumable=True)
+        parent_id = str(parent_meta.get('id'))
+
+        try:
+            # search for file under folder,
+            query = ['\'', parent_id, '\' in parents', ' and title = ', '\'', file_name, '\'',
+                     ' and trashed = False']
+            params = {'q': ''.join(query), 'maxResults': 1}
+            resp = self.__drive.files().list(**params).execute()
+            child_metas = resp.get('items')
+            if child_metas:
+                # if it exists, prompt and update
+                child_meta = child_metas[0]
                 if StdIn.prompt_yes(msg=message.get(message.PROMPT_OVERWRITE, file=file_name)):
-                    self.__drive.files().update(fileId=child_meta.get('id'), media_body=media).execute()
+                    self.__drive.files().update(fileId=child_meta.get('id'), media_body=media_body).execute()
                     return
-        body = {
-            'title': file_name
-        }
-        self.__drive.children().insert(folderId=meta.get('id'), media_body=media, body=body)
+            else:
+                # else insert it as a child to the folder
+                body = {
+                    'title': file_name,
+                    'parents': [{'id': parent_id}]
+                }
+
+                self.__drive.files().insert(body=body, media_body=media_body).execute()
+        except HttpError, error:
+            StdOut.display(
+                msg=message.get(message.ERROR_REMOTE_OPERATION, drive=self.name(), error=error)
+            )
 
     def __insert_folder(self, src=None, meta=None):
         folder_name = fsutil.filename(src)
-        children = self.__drive.children().list(folderId=meta.get('id')).execute()
-        folder_meta = None
-        for child in children:
-            child_meta = self.__drive.files().get(fileId=child.get('id')).execute()
-            if child_meta.get('title') == folder_name and child_meta.get('mimeType') == self.__FOLDER_MIME:
-                folder_meta = child_meta
-                break
+        try:
+            children = self.__drive.children().list(folderId=meta.get('id')).execute()
+            folder_meta = None
+            for child in children:
+                child_meta = self.__drive.files().get(fileId=child.get('id')).execute()
+                if child_meta.get('title') == folder_name and child_meta.get('mimeType') == self.__FOLDER_MIME:
+                    folder_meta = child_meta
+                    break
 
-        if folder_meta is None:
-            body = {
-                'title': folder_name,
-                'mimeType': self.__FOLDER_MIME
-            }
-            folder_meta = self.__drive.children().insert(folderId=meta.get('id'), body=body).execute()
+            if folder_meta is None:
+                body = {
+                    'title': folder_name,
+                    'mimeType': self.__FOLDER_MIME
+                }
+                folder_meta = self.__drive.children().insert(folderId=meta.get('id'), body=body).execute()
 
-        for path in fsutil.list_folder(src):
-            self.__insert(path, folder_meta)
+            for path in fsutil.list_folder(src):
+                self.__insert(path, folder_meta)
+        except HttpError, error:
+            StdOut.display(
+                msg=message.get(message.ERROR_REMOTE_OPERATION, drive=self.name(), error=error)
+            )
 
     @staticmethod
     def name():
@@ -265,9 +304,14 @@ class GoogleDrive(Drive):
 
         if StdIn.prompt_yes(message.get(message.PROMPT_TRASH, file=src, drive=self.name())):
             # delete the file
-            resp = self.__drive.files().trash(fileId=meta.get('id')).execute()
-            if resp:
-                StdOut.display(message.get(message.TRASH, file=src, drive=self.name()))
+            try:
+                resp = self.__drive.files().trash(fileId=meta.get('id')).execute()
+                if resp:
+                    StdOut.display(message.get(message.TRASH, file=src, drive=self.name()))
+            except HttpError, error:
+                StdOut.display(
+                    msg=message.get(message.ERROR_REMOTE_OPERATION, drive=self.name(), error=error)
+                )
 
     def upload(self, **kwargs):
         src = kwargs.get('src', None)
@@ -287,7 +331,7 @@ class GoogleDrive(Drive):
             return
 
         if meta.get('mimeType') != self.__FOLDER_MIME:
-            StdOut.display(msg=message.get(message.INVALID_FOLDER, location=self.name()))
+            StdOut.display(msg=message.get(message.INVALID_DST, location=self.name()))
             return
 
         self.__insert(src, meta)
