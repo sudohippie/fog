@@ -322,7 +322,7 @@ class Push(FogCommand):
         return 'push'
 
     def valid(self):
-        if len(self._args) != 1 and len(self._args) != 2:
+        if len(self._args) != 2:
             StdOut.display(msg=message.get(message.INVALID_ARGS))
             return False
 
@@ -341,11 +341,8 @@ class Push(FogCommand):
 
     def execute(self, **kwargs):
         # validate inputs
-        src = self._args[0]
-        dst = self._args[0]
-
-        if len(self._args) == 2:
-            dst = self._args[1]
+        src = fsutil.abs_path(self._args[0])
+        dst = self._args[1]
 
         drive = device.get_active_drive()
         # open connection
