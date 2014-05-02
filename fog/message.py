@@ -31,7 +31,7 @@ INVALID_ARGS = 'Invalid input argument(s). Try $help.'
 INVALID_COMMAND = 'Unknown command "$command". Try $help.'
 INVALID_CREDENTIALS = 'Invalid credentials.'
 INVALID_FOLDER = 'File may not be folder on $location.'
-ERROR_DOWNLOAD = 'Download failed for $file from $drive. MimeType not supported.'
+ERROR_UNSUPPORTED_DOWNLOAD = 'Download failed for $file from $drive. MimeType not supported.'
 
 
 def get(msg, **kwargs):

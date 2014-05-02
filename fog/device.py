@@ -150,7 +150,7 @@ class GoogleDrive(Drive):
         # todo google document types not supported at this time
         content = self.__get_content(url)
         if content is None:
-            StdOut.display(msg=message.get(message.ERROR_DOWNLOAD, file=meta.get('title'), drive=self.name()))
+            StdOut.display(msg=message.get(message.ERROR_UNSUPPORTED_DOWNLOAD, file=meta.get('title'), drive=self.name()))
         else:
             fsutil.write(dst, content, True)
 
