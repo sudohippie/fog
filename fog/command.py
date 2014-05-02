@@ -302,6 +302,10 @@ class Pull(FogCommand):
         else:
             dst = fsutil.join_paths(src, file_name)
 
+        if not fsutil.is_folder(dst):
+            StdOut.display(msg=message.get(message.INVALID_DST, file=dst, location='local'))
+            return
+
         drive = device.get_active_drive()
         # open connection
         if drive.open():
