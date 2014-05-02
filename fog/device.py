@@ -3,6 +3,7 @@ __author__ = 'Raghav Sidhanti'
 import message
 import fsutil
 import pprint
+import mimetypes
 
 from inout import StdIn
 from inout import StdOut
@@ -141,7 +142,7 @@ class GoogleDrive(Drive):
                 req = self.__drive.files().list_next(req, resp)
         except HttpError, error:
             StdOut.display(
-                msg=message.get(message.ERROR_REMOTE_OPERATION, drive=self.name(), error=error)
+                msg=message.get(message.ERROR_REMOTE_OPERATION, file=path, drive=self.name(), error=error)
             )
 
         return None
@@ -184,7 +185,7 @@ class GoogleDrive(Drive):
                     self.__write_file(child_meta, child_dst)
         except HttpError, error:
             StdOut.display(
-                msg=message.get(message.ERROR_REMOTE_OPERATION, drive=self.name(), error=error)
+                msg=message.get(message.ERROR_REMOTE_OPERATION, file=dst, drive=self.name(), error=error)
             )
 
     def __get_content(self, url):
@@ -207,8 +208,12 @@ class GoogleDrive(Drive):
 
     def __insert_file(self, src=None, parent_meta=None):
         file_name = fsutil.filename(src)
-        media_body = MediaFileUpload(src, resumable=True)
+        mime = mimetypes.guess_type(src)[0]
+        if not mime:
+            mime = 'text/plain'
+        media_body = MediaFileUpload(src, mimetype=mime, resumable=True)
         parent_id = str(parent_meta.get('id'))
+        folder = str(parent_meta.get('title'))
 
         try:
             # search for file under folder,
@@ -222,18 +227,22 @@ class GoogleDrive(Drive):
                 child_meta = child_metas[0]
                 if StdIn.prompt_yes(msg=message.get(message.PROMPT_OVERWRITE, file=file_name)):
                     self.__drive.files().update(fileId=child_meta.get('id'), media_body=media_body).execute()
+                    StdOut.display(msg=message.get(message.LOADED, file=file_name, load='uploaded', folder=folder,
+                                                   drive=self.name()))
                     return
             else:
                 # else insert it as a child to the folder
                 body = {
                     'title': file_name,
-                    'parents': [{'id': parent_id}]
+                    'parents': [{'id': parent_id}],
+                    'mimeType': mime
                 }
-
                 self.__drive.files().insert(body=body, media_body=media_body).execute()
+                StdOut.display(msg=message.get(message.LOADED, file=file_name, load='uploaded', folder=folder,
+                               drive=self.name()))
         except HttpError, error:
             StdOut.display(
-                msg=message.get(message.ERROR_REMOTE_OPERATION, drive=self.name(), error=error)
+                msg=message.get(message.ERROR_REMOTE_OPERATION, file=src, drive=self.name(), error=error)
             )
 
     def __insert_folder(self, src=None, meta=None):
@@ -241,7 +250,7 @@ class GoogleDrive(Drive):
         try:
             children = self.__drive.children().list(folderId=meta.get('id')).execute()
             folder_meta = None
-            for child in children:
+            for child in children.get('items'):
                 child_meta = self.__drive.files().get(fileId=child.get('id')).execute()
                 if child_meta.get('title') == folder_name and child_meta.get('mimeType') == self.__FOLDER_MIME:
                     folder_meta = child_meta
@@ -250,15 +259,16 @@ class GoogleDrive(Drive):
             if folder_meta is None:
                 body = {
                     'title': folder_name,
-                    'mimeType': self.__FOLDER_MIME
+                    'mimeType': self.__FOLDER_MIME,
+                    'parents': [{'id': str(meta.get('id'))}]
                 }
-                folder_meta = self.__drive.children().insert(folderId=meta.get('id'), body=body).execute()
+                folder_meta = self.__drive.files().insert(body=body).execute()
 
             for path in fsutil.list_folder(src):
                 self.__insert(path, folder_meta)
         except HttpError, error:
             StdOut.display(
-                msg=message.get(message.ERROR_REMOTE_OPERATION, drive=self.name(), error=error)
+                msg=message.get(message.ERROR_REMOTE_OPERATION, file=src, drive=self.name(), error=error)
             )
 
     @staticmethod
@@ -310,7 +320,7 @@ class GoogleDrive(Drive):
                     StdOut.display(message.get(message.TRASH, file=src, drive=self.name()))
             except HttpError, error:
                 StdOut.display(
-                    msg=message.get(message.ERROR_REMOTE_OPERATION, drive=self.name(), error=error)
+                    msg=message.get(message.ERROR_REMOTE_OPERATION, file=src, drive=self.name(), error=error)
                 )
 
     def upload(self, **kwargs):

@@ -11,6 +11,7 @@ NO_MARK = ' '
 STATUS = '[$mark] $drive'
 GOOGLE_CONSENT = 'Google requires your consent. Check your default browser to accept access privileges.'
 TRASH = 'Trashed $file on $drive.'
+LOADED = '$file $load to $folder on $drive.'
 
 # prompt
 GOOGLE_ID = 'Enter Google client id: '
@@ -32,7 +33,7 @@ INVALID_COMMAND = 'Unknown command "$command". Try $help.'
 INVALID_CREDENTIALS = 'Invalid credentials.'
 INVALID_DST = 'Destination $file must be a folder on $location.'
 ERROR_UNSUPPORTED_DOWNLOAD = 'Download failed for $file from $drive. MimeType not supported.'
-ERROR_REMOTE_OPERATION = 'Error executing remote operation on $drive. Message: $error'
+ERROR_REMOTE_OPERATION = 'Error executing remote operation for $file on $drive. Message: $error'
 
 
 def get(msg, **kwargs):
