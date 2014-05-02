@@ -290,6 +290,10 @@ class Pull(FogCommand):
             StdOut.display(msg=message.get(message.MISSING_REMOTE, drive=checkout))
             return False
 
+        if not fsutil.is_folder(self._args[1]):
+            StdOut.display(msg=message.get(message.INVALID_DST, file=self._args[1], location='local'))
+            return False
+
         return True
 
     def execute(self, **kwargs):
@@ -297,14 +301,10 @@ class Pull(FogCommand):
         src = self._args[0]
         file_name = fsutil.filename(src)
 
-        if len(self._args) == 2:
-            dst = fsutil.join_paths(self._args[1], file_name)
-        else:
-            dst = fsutil.join_paths(src, file_name)
 
-        if not fsutil.is_folder(dst):
-            StdOut.display(msg=message.get(message.INVALID_DST, file=dst, location='local'))
-            return
+        dst = fsutil.join_paths(self._args[1], file_name)
+
+
 
         drive = device.get_active_drive()
         # open connection

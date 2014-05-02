@@ -99,7 +99,7 @@ def split(path=None):
 
 def is_folder(path=None):
     if exists(path):
-        return os.path.isdir(path)
+        return os.path.isdir(abs_path(path))
     return False
 
 

@@ -226,6 +226,7 @@ class GoogleDrive(Drive):
                 # if it exists, prompt and update
                 child_meta = child_metas[0]
                 if StdIn.prompt_yes(msg=message.get(message.PROMPT_OVERWRITE, file=file_name)):
+                    self.__drive.files().untrash(fileId=child_meta.get('id')).execute()
                     self.__drive.files().update(fileId=child_meta.get('id'), media_body=media_body).execute()
                     StdOut.display(msg=message.get(message.LOADED, file=file_name, load='uploaded', folder=folder,
                                                    drive=self.name()))
@@ -254,6 +255,7 @@ class GoogleDrive(Drive):
                 child_meta = self.__drive.files().get(fileId=child.get('id')).execute()
                 if child_meta.get('title') == folder_name and child_meta.get('mimeType') == self.__FOLDER_MIME:
                     folder_meta = child_meta
+                    self.__drive.files().untrash(fileId=child_meta.get('id')).execute()
                     break
 
             if folder_meta is None:
