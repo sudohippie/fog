@@ -100,7 +100,7 @@ class Init(FogCommand):
     def execute(self, **kwargs):
         proceed = True
         if ConfUtil.exists_home():
-            if not StdIn.prompt_yes(message.get(message.PROMPT_CONTINUE, info=message.HOME_EXISTS)):
+            if not StdIn.prompt_yes(message.get(message.HOME_EXISTS)):
                 proceed = False
 
         # create home and files
