@@ -4,7 +4,7 @@ from string import Template
 
 # info
 REMOTE_EXISTS = '$drive is tracked. Try "remote rm" to un-track and try again or $help.'
-HOME_EXISTS = 'Already initialized, configuration will be overwritten. $continue'
+HOME_EXISTS = 'Fog already initialized, configuration will be overwritten. $continue'
 HELP = '"help" for usage'
 MARK = '*'
 NO_MARK = ' '
