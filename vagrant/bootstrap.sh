@@ -50,5 +50,5 @@ fi
 
 #cd "$($FOG_HOME "$0")"
 #nosetests
-echo "python $HOME/fog/fog/fog.py $1 $2 $3 $4" > $FOG
+echo "python $USER_HOME/fog/fog/fog.py \$1 \$2 \$3 \$4" > $FOG
 chmod a+x $FOG
