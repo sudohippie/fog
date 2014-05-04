@@ -24,6 +24,7 @@ check_status "install pip"
 USER_HOME="/home/vagrant"
 FOG_HOME="/home/vagrant/fog"
 REQ="/home/vagrant/fog/requirements.txt"
+FOG="/usr/local/bin/fog"
 
 if [ -d "$USER_HOME" ];
 then
@@ -49,4 +50,5 @@ fi
 
 #cd "$($FOG_HOME "$0")"
 #nosetests
-echo "python $HOME/fog/fog/fog.py $1 $2 $3 $4" > /usr/local/bin/fog
+echo "python $HOME/fog/fog/fog.py $1 $2 $3 $4" > $FOG
+chmod a+x $FOG
